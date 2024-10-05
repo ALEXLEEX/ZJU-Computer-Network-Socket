@@ -18,6 +18,13 @@
 
 ---
 
+## 参考资源
+
+- [geeksforgeeks.org](https://www.geeksforgeeks.org/socket-programming-in-cpp/)
+- [socket编程示例](references/socket编程示例.pdf)
+
+---
+
 ## 功能要求
 
 根据自定义的协议规范，使用Socket编程接口编写基本的网络应用软件
