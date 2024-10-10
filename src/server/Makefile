@@ -4,5 +4,6 @@ INCLUDE = include
 SRC = src
 OBJ = obj
 TARGET = server
+RM = rm -f
 
 all: $(TARGET)

@@ -1,5 +1,6 @@
 /**
  * @file server_tcp.cpp
+ * @headerfile server_tcp.h
  * @author lqy
  * @brief Server's TCP class implementation.
  * @date 2024-10-09
@@ -15,7 +16,7 @@
 /* Public methods */
 
 Server_TCP::Server_TCP(std::string ip, int port, int queueSize, int bufferSize, double timeout):
-    Server(ip, port, queueSize, bufferSize, timeout)
+    Server_Base(ip, port, queueSize, bufferSize, timeout)
 {
     clientQueue = std::vector<ClientInfo>(queueSize, ClientInfo());
 }

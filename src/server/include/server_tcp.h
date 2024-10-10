@@ -11,7 +11,7 @@
 
 /* Header files */
 
-#include "server.h"
+#include "server_base.h"
 #include <vector>
 #include <netinet/in.h>
 #include <thread>
@@ -45,7 +45,7 @@ private:
  * @class Server_TCP
  * @brief TCP server class
  */
-class Server_TCP : public Server {
+class Server_TCP : public Server_Base {
 public:
 
     /**

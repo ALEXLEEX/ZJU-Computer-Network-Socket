@@ -1,5 +1,6 @@
 /**
  * @file server_udp.h
+ * @headerfile server_udp.h
  * @author lqy
  * @brief Server's UDP class implementation.
  * @date 2024-10-10
@@ -12,7 +13,7 @@
 /* Public methods */
 
 Server_UDP::Server_UDP(std::string ip, int port, int queueSize, int bufferSize, double timeout):
-    Server(ip, port, queueSize, bufferSize, timeout)
+    Server_Base(ip, port, queueSize, bufferSize, timeout)
 {
     clientQueue = std::vector<ClientInfo>(queueSize);
 }

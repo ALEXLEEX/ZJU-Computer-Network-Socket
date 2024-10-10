@@ -9,7 +9,7 @@
 #define _SERVER_UDP_H
 
 /* Header files */
-#include "server.h"
+#include "server_base.h"
 #include <vector>
 #include <thread>
 #include <netinet/in.h>
@@ -37,7 +37,7 @@ private:
  * @class Server_UDP
  * @brief UDP server class
  */
-class Server_UDP : public Server {
+class Server_UDP : public Server_Base {
 public:
 
     /**

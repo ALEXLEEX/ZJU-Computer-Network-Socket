@@ -1,89 +1,12 @@
 /**
  * @file server.h
  * @author lqy
- * @brief Server's base class interface.
- * @date 2024-10-01
+ * @brief Wrapper for server classes.
+ * @date 2024-10-10
+ * @note This class provides the interface for users.
  */
 
 #ifndef _SERVER_H
 #define _SERVER_H
-
-/* Header files */
-
-#include "../include/micros.h"
-#include <string>
-
-/* Utilities */
-
-enum class ServerType {
-    TCP,
-    UDP
-};
-
-enum class ServerMsgType {
-    MSG,
-    ERROR,
-    INFO,
-    WELCOME
-};
-
-/* Main class */
-
-/**
- * @class Server
- * @brief Server's base class for TCP type server and UDP type server
- */
-class Server {
-public:
-
-    /**
-     * Constructor of `Server` class to initialize the server.
-     * @param ip Server ip
-     * @param port Server port
-     * @param queueSize Server queue waiting clients for connection
-     * @param bufferSize Server buffer for receiving data
-     * @param timeout Server waiting connection timeout
-     */
-    Server(std::string ip, int port, int queueSize = SERVER_QUEUE_SIZE, int bufferSize = SERVER_BUFFER_SIZE, double timeout = SERVER_TIMEOUT);
-
-    /**
-     * Destructor of `Server` class.
-     */
-    ~Server();
-
-    /**
-     * Server initializor by creating a socket, setting socket options, and binding it to the specified IP address and port.
-     */
-    void init();
-
-    /**
-     * Server runner.
-     */
-    virtual void run() = 0;
-
-    void cmds();
-
-protected:
-
-    int serverSocket; // Server socket.
-    std::string serverIp; // Server IP.
-    int serverPort; // Server port.
-    int queueSize; // Server waiting client queue size.
-    int bufferSize; // Server received message buffer size.
-    double timeout; // Server waiting timeout.
-
-    void printMessage(ServerMsgType msgType, std::string msg);
-
-    virtual void getSocket() = 0; // Get server socket.
-
-    void setOptions(double timeout); // Set server socket options.
-
-    void bindAddress(std::string serverIp, int serverPort); // Bind server IP address and port.
-
-    void startSocketThread(); // Start server main thread.
-
-    virtual void worker() = 0; // Server worker.
-
-};
 
 #endif /* _SERVER_H */
