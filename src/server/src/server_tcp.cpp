@@ -52,7 +52,7 @@ void Server_TCP::startListen()
 {
     int rc = listen(serverSocket, queueSize);
     if (rc < 0) printMessage(ServerMsgType::ERROR, "Failed to listen.");
-    printMessage(ServerMsgType::INFO, "Start listening on " + serverIp + std::to_string(serverPort) + ".");
+    printMessage(ServerMsgType::INFO, "Start listening on " + serverIp + ":" + std::to_string(serverPort) + ".");
 }
 
 void Server_TCP::worker()
@@ -61,7 +61,6 @@ void Server_TCP::worker()
     while (1) {
         int clientSocket = accept(serverSocket, nullptr, nullptr);
         if (clientSocket < 0) printMessage(ServerMsgType::ERROR, "Failed to accept client.");
-        printMessage(ServerMsgType::INFO, "New client connected, socket = " + std::to_string(clientSocket));
         startClientThread(clientSocket);
         // TODO: add cmds.
     }
@@ -81,6 +80,8 @@ void Server_TCP::process(int clientSocket)
 {
     char buffer[bufferSize];
     ClientInfo& client = saveConnectInfo(clientSocket, std::this_thread::get_id());
+    printMessage(ServerMsgType::INFO, "New client from " + std::to_string(client.getIP()) + ":" + std::to_string(client.getPort()) + " connected.");
+    // TODO: send a feedback to client.
     while (client.getStatus()) {
         int rc = recv(clientSocket, buffer, sizeof(buffer), 0);
         if (rc <= 0) break; // Receive message.
@@ -91,7 +92,7 @@ void Server_TCP::process(int clientSocket)
     close(clientSocket); // Close the socket.
     client.setSocket(-1); 
     client.setStatus(0); // Disconnect.
-    printMessage(ServerMsgType::INFO, "Client closed, socket = " + std::to_string(clientSocket));
+    printMessage(ServerMsgType::INFO, "Client from " + std::to_string(client.getIP()) + ":" + std::to_string(client.getPort()) + " disconnected.");
 }
 
 ClientInfo& Server_TCP::saveConnectInfo(int clientSocket, std::thread::id thread)

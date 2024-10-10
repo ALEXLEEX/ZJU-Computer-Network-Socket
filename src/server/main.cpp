@@ -5,9 +5,9 @@
  * @date 2024-10-09
  */
 
-#include "include/CLI.h"
+#include "include/server.h"
 
-int main()
+int main(int argc, char *argv[])
 {
     return 0;
 }

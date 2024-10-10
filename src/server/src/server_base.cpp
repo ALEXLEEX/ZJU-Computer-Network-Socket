@@ -15,6 +15,7 @@
 #include <unistd.h>
 #include <thread>
 #include <system_error>
+#include <stdlib.h>
 
 /* Public methods */
 
@@ -45,7 +46,7 @@ void Server_Base::printMessage(ServerMsgType msgType, std::string msg)
             break;
         case ServerMsgType::ERROR:
             std::cerr << "\033[31m[Server] " << msg << "\033[0m" << std::endl;
-            exit(-1);
+            exit(EXIT_FAILURE);
         case ServerMsgType::INFO:
             std::cout << "\033[32m[Server] " << msg << "\033[0m" << std::endl;
             break;
