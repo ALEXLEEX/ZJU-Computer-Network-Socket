@@ -41,7 +41,7 @@ void Server::printMessage(ServerMsgType msgType, std::string msg)
 {
     switch (msgType) {
         case ServerMsgType::MSG:
-            std::cout << "\033[36m" << msg << "\033[0m" << std::endl;
+            std::cout << "\033[37m" << msg << "\033[0m" << std::endl;
             break;
         case ServerMsgType::ERROR:
             std::cerr << "\033[31m[Server] " << msg << "\033[0m" << std::endl;

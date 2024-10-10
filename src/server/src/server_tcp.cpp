@@ -123,6 +123,7 @@ ClientInfo& Server_TCP::saveConnectInfo(int clientSocket, std::thread::id thread
         if (index1 != index2 && client.getStatus() && client.getIP() == clientQueue[index1].getIP() && client.getPort() == clientQueue[index1].getPort()) {
             client.setStatus(0); // Disconnect.
         }
+        index2++;
     }
 
     return clientQueue.at(index1);
