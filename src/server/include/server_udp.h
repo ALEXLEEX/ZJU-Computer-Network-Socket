@@ -10,26 +10,9 @@
 
 /* Header files */
 #include "server_base.h"
-#include <vector>
-#include <thread>
+#include "client_info.h"
+#include <string>
 #include <netinet/in.h>
-
-/* Utilties */
-
-class ClientInfo {
-public:
-    ClientInfo(): status(0), ip(0), port(0) {};
-    int getStatus() const { return status; }
-    in_addr_t getIP() const { return ip; }
-    in_port_t getPort() const { return port; }
-    void setStatus(int status) { this->status = status; }
-    void setIP(in_addr_t ip) { this->ip = ip; }
-    void setPort(in_port_t port) { this->port = port; }
-private:
-    int status; // 0: unconnected; 1: connected.
-    in_addr_t ip;
-    in_port_t port;
-};
 
 /* Main class */
 
@@ -53,24 +36,20 @@ public:
     /**
      * Destructor of `Server_UDP` class.
      */
-    ~Server_UDP();
+    ~Server_UDP() = default;
 
     /**
      * Server runner.
      */
     virtual void run();
 
-    void cmds();
-
 private:
-
-    std::vector<ClientInfo> clientQueue; // Client queue.
 
     virtual void getSocket(); // Get server socket.
 
     virtual void worker(); // Server worker.
 
-    void saveConnectInfo(in_addr_t clientIp, in_port_t clientPort, int clientStatus); // Save client connection info.
+    void saveConnectInfo(ClientAddr clientAddr, int clientStatus); // Save client connection info.
 
 };
 

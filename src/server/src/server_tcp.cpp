@@ -7,36 +7,26 @@
  */
 
 #include "../include/server_tcp.h"
+#include "../include/client_info.h"
 #include <vector>
 #include <thread>
 #include <system_error>
+#include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <unistd.h>
 
 /* Public methods */
 
 Server_TCP::Server_TCP(std::string ip, int port, int queueSize, int bufferSize, double timeout):
-    Server_Base(ip, port, queueSize, bufferSize, timeout)
-{
-    clientQueue = std::vector<ClientInfo>(queueSize, ClientInfo());
-}
-
-Server_TCP::~Server_TCP()
-{
-    for (ClientInfo& client: clientQueue) {
-        if (client.getStatus()) {
-            client.setStatus(0); // Disconnect.
-        }
-    }
-    close(serverSocket);
-    clientQueue.clear();
-}
+    Server_Base(ip, port, queueSize, bufferSize, timeout) {}
 
 void Server_TCP::run()
 {
-    printMessage(ServerMsgType::INFO, "The server is now running...");
     startListen();
     startSocketThread();
+    printMessage(ServerMsgType::INFO, "The server is now running...");
+    // TODO: add server cmds(quit, ...) here
 }
 
 /* Utility functions */
@@ -62,7 +52,7 @@ void Server_TCP::worker()
         int clientSocket = accept(serverSocket, nullptr, nullptr);
         if (clientSocket < 0) printMessage(ServerMsgType::ERROR, "Failed to accept client.");
         startClientThread(clientSocket);
-        // TODO: add cmds.
+        // TODO: add server cmds: while(1) -> while(serverStatus) { ... }
     }
 }
 
@@ -78,21 +68,28 @@ void Server_TCP::startClientThread(int clientSocket)
 
 void Server_TCP::process(int clientSocket)
 {
-    char buffer[bufferSize];
+    // Save client connection information.
     ClientInfo& client = saveConnectInfo(clientSocket, std::this_thread::get_id());
-    printMessage(ServerMsgType::INFO, "New client from " + std::to_string(client.getIP()) + ":" + std::to_string(client.getPort()) + " connected.");
-    // TODO: send a feedback to client.
+    sendResponse(client, "Connected to server(" + serverIp + ":" + std::to_string(serverPort) + ").");
+    printMessage(ServerMsgType::INFO, "New client(socket=" + std::to_string(clientSocket) + ") " + client.getIP() + ":" + std::to_string(client.getPort()) + "connected, assigned id=" + std::to_string(client.getID()) + ".");
+
+    // Receive and handle client requests.
+    char buffer[bufferSize];
     while (client.getStatus()) {
         int rc = recv(clientSocket, buffer, sizeof(buffer), 0);
-        if (rc <= 0) break; // Receive message.
+        if (rc <= 0) break;
         std::string message(buffer, rc);
-        printMessage(ServerMsgType::MSG, "[Client|" + std::to_string(clientSocket) + "]" + message);
-        // TODO: Feedback.
+        printMessage(ServerMsgType::MSG, "[Client|" + std::to_string(client.getID()) + "]" + message);
+        handleRequest(client, message);
     }
+
+    // Close connection.
+    sendResponse(client, "Disconnected from server(" + serverIp + ":" + std::to_string(serverPort) + ").");
     close(clientSocket); // Close the socket.
     client.setSocket(-1); 
-    client.setStatus(0); // Disconnect.
-    printMessage(ServerMsgType::INFO, "Client from " + std::to_string(client.getIP()) + ":" + std::to_string(client.getPort()) + " disconnected.");
+    client.setStatus(0);
+    client.setID(-1); // Disconnect.
+    printMessage(ServerMsgType::INFO, "Client " + std::to_string(client.getID()) + " disconnected.");
 }
 
 ClientInfo& Server_TCP::saveConnectInfo(int clientSocket, std::thread::id thread)
@@ -103,30 +100,25 @@ ClientInfo& Server_TCP::saveConnectInfo(int clientSocket, std::thread::id thread
     // Get client address.
     getpeername(clientSocket, (struct sockaddr *)&clientAddr, &len);
 
-    in_addr_t clientIp = clientAddr.sin_addr.s_addr;
-    in_port_t clientPort = clientAddr.sin_port;
-
     // Enqueue client information.
-    int index1 = 0, index2 = 0;
-    for (ClientInfo& client: clientQueue) {
-        if (!client.getStatus()) {
-            client.setStatus(1);
-            client.setSocket(clientSocket);
-            client.setIP(clientIp);
-            client.setPort(clientPort);
-            client.setThread(thread);
+    int id = 1;
+    for (ClientInfo& thisClient: clientQueue) {
+        if (!thisClient.getStatus()) {
+            thisClient.setStatus(1);
+            thisClient.setSocket(clientSocket);
+            thisClient.setAddr(clientAddr);
+            thisClient.setThread(thread);
+            thisClient.setID(id);
             break;
         }
-        index1++;
+        id++;
+        // TODO: if (id == queueSize + 1) {...}
     }
+    ClientInfo& client = clientQueue.at(id);
 
     // Close the client's other connections.
-    for (ClientInfo& client: clientQueue) {
-        if (index1 != index2 && client.getStatus() && client.getIP() == clientQueue[index1].getIP() && client.getPort() == clientQueue[index1].getPort()) {
-            client.setStatus(0); // Disconnect.
-        }
-        index2++;
+    for (ClientInfo& other: clientQueue) {
+        if (client == other) other.setStatus(0); // Disconnect.
     }
-
-    return clientQueue.at(index1);
+    return client;
 }

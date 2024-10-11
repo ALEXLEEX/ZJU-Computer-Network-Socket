@@ -10,8 +10,10 @@
 
 /* Header files */
 
-#include "../include/micros.h"
+#include "micros.h"
+#include "client_info.h"
 #include <string>
+#include <vector>
 
 /* Utilities */
 
@@ -61,8 +63,6 @@ public:
      */
     virtual void run() = 0;
 
-    void cmds();
-
 protected:
 
     int serverSocket; // Server socket.
@@ -71,6 +71,7 @@ protected:
     int queueSize; // Server waiting client queue size.
     int bufferSize; // Server received message buffer size.
     double timeout; // Server waiting timeout.
+    std::vector<ClientInfo> clientQueue; // Client queue.
 
     void printMessage(ServerMsgType msgType, std::string msg);
 
@@ -83,6 +84,8 @@ protected:
     void startSocketThread(); // Start server main thread.
 
     virtual void worker() = 0; // Server worker.
+
+    void sendResponse(ClientInfo client, std::string message); // Send response to client.
 
 };
 

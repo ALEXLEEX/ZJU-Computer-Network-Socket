@@ -6,11 +6,13 @@
 
 ## TODOs
 
-- [ ] 客户端ID：队列的下标
-- [ ] `Server_TCP::process`中，连接上后和断开连接后的消息提示
+- [x] 客户端ID：队列的下标
+- [x] `Server_TCP::process`中，连接上后和断开连接后的消息提示
+- [x] 关闭server时关闭所有连接
 - [ ] `Server_UDP::worker`中连接上和断开后的消息提示
-- [ ] 关闭server时关闭所有连接
+- [ ] `Server_UDP::saveConnectInfo`修复
 - [ ] 接收到客户端的指令分析与对应响应
+- [ ] 客户端队列满的情况
 
 ---
 

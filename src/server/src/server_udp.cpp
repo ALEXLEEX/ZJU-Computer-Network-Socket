@@ -8,25 +8,19 @@
 
 #include "../include/server_udp.h"
 #include <vector>
+#include <unistd.h>
 #include <arpa/inet.h>
 
 /* Public methods */
 
 Server_UDP::Server_UDP(std::string ip, int port, int queueSize, int bufferSize, double timeout):
-    Server_Base(ip, port, queueSize, bufferSize, timeout)
-{
-    clientQueue = std::vector<ClientInfo>(queueSize);
-}
-
-Server_UDP::~Server_UDP()
-{
-    clientQueue.clear();
-}
+    Server_Base(ip, port, queueSize, bufferSize, timeout) {}
 
 void Server_UDP::run()
 {
-    printMessage(ServerMsgType::INFO, "The server is now running...");
     startSocketThread();
+    printMessage(ServerMsgType::INFO, "The server is now running...");
+    // TODO: add server cmds(quit, ...) here
 }
 
 /* Utility functions */
@@ -35,7 +29,7 @@ void Server_UDP::getSocket()
 {
     serverSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (serverSocket < 0) printMessage(ServerMsgType::ERROR, "Failed to create server socket.");
-    printMessage(ServerMsgType::INFO, "Get server socket: " + std::to_string(serverSocket));
+    printMessage(ServerMsgType::INFO, "Get server socket: " + std::to_string(serverSocket) + ".");
 }
 
 void Server_UDP::worker()
@@ -49,31 +43,31 @@ void Server_UDP::worker()
         if (rc <= 0) break;
         std::string message(buffer, rc);
         printMessage(ServerMsgType::MSG, "[Client|" + std::string(inet_ntoa(clientAddr.sin_addr)) + ":" + std::to_string(ntohs(clientAddr.sin_port)) + "] " + message);
-        // TODO: add cmds.
+        // TODO: add server cmds: while(1) -> while(serverStatus) { ... }
         // TODO: add saveConnectInfo.
     }
 }
 
-void Server_UDP::saveConnectInfo(in_addr_t clientIp, in_port_t clientPort, int clientStatus)
+void Server_UDP::saveConnectInfo(ClientAddr clientAddr, int clientStatus)
 {
-    int index1 = 0, index2 = 0;
+    // TODO: fix whole func
+    int id = 0;
     if (clientStatus) { // New connection.
         for (ClientInfo& client: clientQueue) {
             if (!client.getStatus()) {
                 client.setStatus(1);
-                client.setIP(clientIp);
-                client.setPort(clientPort);
+                client.setAddr(clientAddr);
+                client.setID(id);
                 break;
             }
-            index1++;
+            id++;
         }
-    } else index1 = queueSize; // Close connection.
+    } else id = queueSize; // Close connection.
 
     // Close the client's other connections.
-    for (ClientInfo& client: clientQueue) {
-        if (index2 != index1 && client.getStatus() && client.getIP() == clientIp && client.getPort() == clientPort) {
-            client.setStatus(0); // Clear the status.
+    for (ClientInfo& other: clientQueue) {
+        if (clientQueue[id] == other) {
+            other.setStatus(0); // Clear the status.
         }
-        index2++;
     }
 }

@@ -7,6 +7,7 @@
  */
 
 #include "../include/server_base.h"
+#include "../include/client_info.h"
 #include <iostream>
 #include <string>
 #include <sys/socket.h>
@@ -20,11 +21,22 @@
 /* Public methods */
 
 Server_Base::Server_Base(std::string ip, int port, int queueSize, int bufferSize, double timeout):
-    serverSocket(-1), serverIp(ip), serverPort(port), queueSize(queueSize), bufferSize(bufferSize), timeout(timeout) {}
+    serverSocket(-1), serverIp(ip), serverPort(port), queueSize(queueSize), bufferSize(bufferSize), timeout(timeout)
+{
+    clientQueue = std::vector<ClientInfo>(queueSize, ClientInfo());
+}
 
 Server_Base::~Server_Base()
 {
-    printMessage(ServerMsgType::WELCOME, "Server closed, GOODBYE!!!");
+    // Disconnect all clients.
+    for (ClientInfo& client: clientQueue) {
+        if (client.getStatus()) {
+            client.setStatus(0);
+        }
+    }
+    clientQueue.clear();
+    close(serverSocket); // Close the server socket.
+    printMessage(ServerMsgType::WELCOME, "Server shuts down, GOODBYE!!!");
 }
 
 void Server_Base::init()
@@ -92,4 +104,10 @@ void Server_Base::startSocketThread()
     } catch (const std::system_error& e) {
         printMessage(ServerMsgType::ERROR, e.what());
     }
+}
+
+void Server_Base::sendResponse(ClientInfo client, std::string message)
+{
+    message = "[Server] " + message;
+    send(client.getSocket(), message.c_str(), message.size(), 0);
 }

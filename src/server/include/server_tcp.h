@@ -12,32 +12,8 @@
 /* Header files */
 
 #include "server_base.h"
-#include <vector>
-#include <netinet/in.h>
-#include <thread>
-
-/* Utilitis */
-
-class ClientInfo {
-public:
-    ClientInfo(): status(0), socket(-1), ip(0), port(0), thread(0) {};
-    int getStatus() const { return status; }
-    int getSocket() const { return socket; }
-    in_addr_t getIP() const { return ip; }
-    in_port_t getPort() const { return port; }
-    std::thread::id getThread() const { return thread; }
-    void setStatus(int status) { this->status = status; }
-    void setSocket(int socket) { this->socket = socket; }
-    void setIP(in_addr_t ip) { this->ip = ip; }
-    void setPort(in_port_t port) { this->port = port; }
-    void setThread(std::thread::id thread) { this->thread = thread; }
-private:
-    int status; // 0: unconnected; 1: connected.
-    int socket; // TCP socket.
-    in_addr_t ip;
-    in_port_t port;
-    std::thread::id thread;
-};
+#include "client_info.h"
+#include <string>
 
 /* Main class */
 
@@ -62,18 +38,14 @@ public:
      * Destructor of `Server_TCP` class.
      * @note It will close all TCP sockets and threads.
      */
-    ~Server_TCP();
+    ~Server_TCP() = default;
 
     /**
      * Server runner.
      */
     virtual void run();
 
-    void cmds();
-
 private:
-
-    std::vector<ClientInfo> clientQueue; // Client queue.
 
     virtual void getSocket(); // Get server socket.
 
@@ -86,6 +58,8 @@ private:
     void process(int clientSocket); // Process client message.
 
     ClientInfo& saveConnectInfo(int clientSocket, std::thread::id thread); // Save client connection info.
+
+    void handleRequest(ClientInfo& client, std::string message); // Handle client request.
 
 };
 
