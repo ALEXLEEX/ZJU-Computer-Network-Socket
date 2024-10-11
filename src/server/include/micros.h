@@ -8,23 +8,6 @@
 #ifndef _SERVER_MICROS_H
 #define _SERVER_MICROS_H
 
-/* Micros configuration. */
-
-/**
- * @brief Server type.
- * @deprecated Use the enum class `ServerType` instead.
- */
-#define SERVER_TYPE_TCP 0 // Server type: TCP.
-#define SERVER_TYPE_UDP 1 // Server type: UDP.
-
-/**
- * @brief Server message types.
- * @deprecated Use the enum class `ServerMsgType` instead.
- */
-#define SERVER_MSG 0 // Server message.
-#define SERVER_MSG_ERROR 1 // Error message.
-#define SERVER_MSG_INFO 2 // Information message.
-
 /* Server queue size. */
 #define SERVER_QUEUE_SIZE 256 // Maximum number of waiting clients in server queue.
 
