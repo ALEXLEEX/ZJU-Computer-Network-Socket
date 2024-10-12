@@ -36,7 +36,7 @@ Server_Base::~Server_Base()
     }
     clientQueue.clear();
     close(serverSocket); // Close the server socket.
-    printMessage(ServerMsgType::WELCOME, "Server shuts down, GOODBYE!!!");
+    printMessage(ServerMsgType::WELCOME, "Server deconstructed, GOODBYE!!!");
 }
 
 void Server_Base::init()
@@ -99,15 +99,20 @@ void Server_Base::bindAddress(std::string serverIp, int serverPort)
 void Server_Base::startSocketThread()
 {
     try {
+        printMessage(ServerMsgType::INFO, "The server is now running...");
         std::thread thread(&Server_Base::worker, this);
         thread.join();
+        printMessage(ServerMsgType::INFO, "Server shuts down.");
     } catch (const std::system_error& e) {
         printMessage(ServerMsgType::ERROR, e.what());
     }
 }
 
-void Server_Base::sendResponse(ClientInfo client, std::string message)
+void Server_Base::closeClient(ClientInfo& client)
 {
-    message = "[Server] " + message;
-    send(client.getSocket(), message.c_str(), message.size(), 0);
+    sendResponse(client, "Disconnected from server(" + serverIp + ":" + std::to_string(serverPort) + ").");
+    close(client.getSocket());
+    client.setStatus(0); // Shut down the sub thread.
+    client.setID(-1);
+    printMessage(ServerMsgType::INFO, "Client " + std::to_string(client.getID()) + " disconnected from server.");
 }

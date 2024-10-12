@@ -47,19 +47,29 @@ public:
 
 private:
 
-    virtual void getSocket(); // Get server socket.
+    /* Get server socket. */
+    virtual void getSocket();
 
-    void startListen(); // Start listening.
+    /* Start listening. */
+    void startListen();
 
-    virtual void worker(); // Server worker.
+    /* Run the server by this worker. */
+    virtual void worker();
 
-    void startClientThread(int clientSocket); // Start a client thread.
+    /* Start a client thread. */
+    void startClientThread(int clientSocket);
 
-    void process(int clientSocket); // Process client message.
+    /* Run the client thread by this worker. */
+    void process(int clientSocket);
 
-    ClientInfo& saveConnectInfo(int clientSocket, std::thread::id thread); // Save client connection info.
+    /* Send response to client. */
+    virtual void sendResponse(ClientInfo client, std::string message);
 
-    void handleRequest(ClientInfo& client, std::string message); // Handle client request.
+    /* Save client connection info. */
+    ClientInfo& saveConnectInfo(int clientSocket, std::thread::id thread);
+
+    /* Handle client request. */
+    void handleRequest(ClientInfo& client, std::string message);
 
 };
 

@@ -73,19 +73,29 @@ protected:
     double timeout; // Server waiting timeout.
     std::vector<ClientInfo> clientQueue; // Client queue.
 
+    /* Print messages with different types. */
     void printMessage(ServerMsgType msgType, std::string msg);
 
-    virtual void getSocket() = 0; // Get server socket.
+    /* Get server socket. */
+    virtual void getSocket() = 0;
 
-    void setOptions(double timeout); // Set server socket options.
+    /* Set server socket options. */
+    void setOptions(double timeout);
 
-    void bindAddress(std::string serverIp, int serverPort); // Bind server IP address and port.
+    /* Bind server IP address and port. */
+    void bindAddress(std::string serverIp, int serverPort);
 
-    void startSocketThread(); // Start server main thread.
+    /* Start server main thread. */
+    void startSocketThread();
 
-    virtual void worker() = 0; // Server worker.
+    /* Running the server by this worker. */
+    virtual void worker() = 0;
 
-    void sendResponse(ClientInfo client, std::string message); // Send response to client.
+    /* Send response to client. */
+    virtual void sendResponse(ClientInfo client, std::string message) = 0;
+
+    /* Close the connection from the client. */
+    void closeClient(ClientInfo& client);
 
 };
 

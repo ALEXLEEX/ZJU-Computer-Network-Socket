@@ -25,7 +25,6 @@ void Server_TCP::run()
 {
     startListen();
     startSocketThread();
-    printMessage(ServerMsgType::INFO, "The server is now running...");
     // TODO: add server cmds(quit, ...) here
 }
 
@@ -47,13 +46,19 @@ void Server_TCP::startListen()
 
 void Server_TCP::worker()
 {
-    // Wait and accept.
+    // Server starts running, wait and accept.
     while (1) {
         int clientSocket = accept(serverSocket, nullptr, nullptr);
         if (clientSocket < 0) printMessage(ServerMsgType::ERROR, "Failed to accept client.");
         startClientThread(clientSocket);
         // TODO: add server cmds: while(1) -> while(serverStatus) { ... }
     }
+
+    // Server shuts down, closin all connections and close server socket.
+    for (ClientInfo& client: clientQueue)
+        if (client.getStatus()) closeClient(client);
+    close(serverSocket);
+    serverSocket = -1;
 }
 
 void Server_TCP::startClientThread(int clientSocket)
@@ -79,17 +84,17 @@ void Server_TCP::process(int clientSocket)
         int rc = recv(clientSocket, buffer, sizeof(buffer), 0);
         if (rc <= 0) break;
         std::string message(buffer, rc);
-        printMessage(ServerMsgType::MSG, "[Client|" + std::to_string(client.getID()) + "]" + message);
         handleRequest(client, message);
     }
 
     // Close connection.
-    sendResponse(client, "Disconnected from server(" + serverIp + ":" + std::to_string(serverPort) + ").");
-    close(clientSocket); // Close the socket.
-    client.setSocket(-1); 
-    client.setStatus(0);
-    client.setID(-1); // Disconnect.
-    printMessage(ServerMsgType::INFO, "Client " + std::to_string(client.getID()) + " disconnected.");
+    closeClient(client);
+}
+
+void Server_TCP::sendResponse(ClientInfo client, std::string message)
+{
+    message = "[Server] " + message;
+    send(client.getSocket(), message.c_str(), message.size(), 0);
 }
 
 ClientInfo& Server_TCP::saveConnectInfo(int clientSocket, std::thread::id thread)
@@ -121,4 +126,16 @@ ClientInfo& Server_TCP::saveConnectInfo(int clientSocket, std::thread::id thread
         if (client == other) other.setStatus(0); // Disconnect.
     }
     return client;
+}
+
+void Server_TCP::handleRequest(ClientInfo& client, std::string message)
+{
+    /**
+     * @todo Handle client request.
+     * @brief 1. Send response to client of receiving message.
+     *        2. Decode packet and print to server console.
+     *        3. Parse request.
+     *        4. Handle request and response.
+     *        5. set return code: if the client quits, set return code to -1.
+     */
 }

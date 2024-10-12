@@ -45,11 +45,20 @@ public:
 
 private:
 
-    virtual void getSocket(); // Get server socket.
+    /* Get server socket */
+    virtual void getSocket();
 
-    virtual void worker(); // Server worker.
+    /* Run the server by this worker. */
+    virtual void worker();
 
-    void saveConnectInfo(ClientAddr clientAddr, int clientStatus); // Save client connection info.
+    /* Send response to client. */
+    virtual void sendResponse(ClientInfo client, std::string message);
+
+    /* Save client connection info. */
+    void saveConnectInfo(ClientAddr clientAddr, int clientStatus);
+
+    /* Handle client request. */
+    void handleRequest(ClientInfo& client, std::string message);
 
 };
 

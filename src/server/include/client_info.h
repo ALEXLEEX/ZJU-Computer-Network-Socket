@@ -51,6 +51,9 @@ public:
     /* Get client port. */
     inline int getPort() const { return static_cast<int>(ntohs(addr.sin_port)); }
 
+    /* Get client address. */
+    inline ClientAddr getAddr() const { return addr; }
+
     /* Get client thread id. */
     inline std::thread::id getThread() const { return thread; }
 
