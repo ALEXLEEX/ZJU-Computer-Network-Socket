@@ -76,7 +76,7 @@ void Server_TCP::process(int clientSocket)
     // Save client connection information.
     ClientInfo& client = saveConnectInfo(clientSocket, std::this_thread::get_id());
     sendResponse(client, "Connected to server(" + serverIp + ":" + std::to_string(serverPort) + ").");
-    printMessage(ServerMsgType::INFO, "New client(socket=" + std::to_string(clientSocket) + ") " + client.getIP() + ":" + std::to_string(client.getPort()) + "connected, assigned id=" + std::to_string(client.getID()) + ".");
+    printMessage(ServerMsgType::INFO, "New client (socketFd = " + std::to_string(clientSocket) + ") from " + client.getIP() + ":" + std::to_string(client.getPort()) + " connected, assigned id = " + std::to_string(client.getID()) + ".");
 
     // Receive and handle client requests.
     char buffer[bufferSize];
