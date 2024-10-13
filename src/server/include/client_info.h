@@ -12,6 +12,7 @@
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <iostream>
 #include <string>
 #include <thread>
 
@@ -76,12 +77,18 @@ public:
     /* Set client id. */
     inline void setID(ClientID id) { this->id = id; }
 
-    /* Operator equal: compare two clients by id, IP and port. */
+    /* Operator equal: compare two clients with different id by IP and port. */
     inline bool operator==(const ClientInfo& other) const {
         return this->getStatus() && other.getStatus() &&
-            this->id == other.id &&
+            this->id != other.id &&
             this->addr.sin_addr.s_addr == other.addr.sin_addr.s_addr &&
             this->addr.sin_port == other.addr.sin_port;
+    }
+
+    /* Debugger. */
+    inline void print() const {
+        std::cout << "Client " << id << " (" << getIP() << ":" << getPort() << ") from socket " << socket << " in thread " << thread << " is ";
+        std::cout << (status ? "connected" : "disconnected") << "." << std::endl;
     }
 
 private:

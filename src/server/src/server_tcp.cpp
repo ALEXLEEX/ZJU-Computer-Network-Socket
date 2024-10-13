@@ -106,7 +106,7 @@ ClientInfo& Server_TCP::saveConnectInfo(int clientSocket, std::thread::id thread
     getpeername(clientSocket, (struct sockaddr *)&clientAddr, &len);
 
     // Enqueue client information.
-    int id = 1;
+    int id = 0;
     for (ClientInfo& thisClient: clientQueue) {
         if (!thisClient.getStatus()) {
             thisClient.setStatus(1);

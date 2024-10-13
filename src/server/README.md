@@ -10,11 +10,12 @@ Author: [lqy](https://github.com/lEEExp3rt)
 - [x] `Server_TCP::process`中，连接上后和断开连接后的消息提示
 - [x] 关闭server时关闭所有连接
 - [x] `Server_UDP::saveConnectInfo`修复
+- [ ] 客户端ID分配
 - [ ] 客户端队列满的情况
 - [ ] 接收到客户端的指令分析与对应响应
 - [ ] 协议包设计：信息编码与解码，设计一个协议包的类
 - [ ] 更多样式的server控制台输出
-- [ ] `server.h`与`server.cpp`实现，`main.cpp`完成最终程序
+- [x] `server.h`与`server.cpp`实现，`main.cpp`完成最终程序
 
 ---
 

@@ -17,7 +17,7 @@ BIN = bin
 TARGET = $(BIN)/server
 
 # Utilities.
-RM = rm -f
+RM = rm -rf
 
 # Rules
 all: $(TARGET)
@@ -39,4 +39,4 @@ $(BIN):
 
 .PHONY: clean
 clean:
-	$(RM) $(OD)/*.o $(TARGET)
+	$(RM) $(OD) $(BIN)
