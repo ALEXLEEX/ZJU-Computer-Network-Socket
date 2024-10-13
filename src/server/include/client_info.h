@@ -11,6 +11,7 @@
 /* Header files. */
 
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <string>
 #include <thread>
 
@@ -52,7 +53,7 @@ public:
     inline int getPort() const { return static_cast<int>(ntohs(addr.sin_port)); }
 
     /* Get client address. */
-    inline ClientAddr getAddr() const { return addr; }
+    inline ClientAddr& getAddr() { return addr; }
 
     /* Get client thread id. */
     inline std::thread::id getThread() const { return thread; }

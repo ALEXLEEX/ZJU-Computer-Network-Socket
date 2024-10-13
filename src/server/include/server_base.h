@@ -51,7 +51,7 @@ public:
     /**
      * Destructor of `Server_Base` class.
      */
-    ~Server_Base();
+    virtual ~Server_Base();
 
     /**
      * Server initializor by creating a socket, setting socket options, and binding it to the specified IP address and port.

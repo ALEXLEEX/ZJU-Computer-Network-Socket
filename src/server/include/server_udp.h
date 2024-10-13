@@ -36,7 +36,7 @@ public:
     /**
      * Destructor of `Server_UDP` class.
      */
-    ~Server_UDP() = default;
+    virtual ~Server_UDP() = default;
 
     /**
      * Server runner.

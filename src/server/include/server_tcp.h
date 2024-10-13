@@ -38,7 +38,7 @@ public:
      * Destructor of `Server_TCP` class.
      * @note It will close all TCP sockets and threads.
      */
-    ~Server_TCP() = default;
+    virtual ~Server_TCP() = default;
 
     /**
      * Server runner.
