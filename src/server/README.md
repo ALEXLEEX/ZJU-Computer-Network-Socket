@@ -14,6 +14,7 @@ Author: [lqy](https://github.com/lEEExp3rt)
 - [ ] 接收到客户端的指令分析与对应响应
 - [ ] 协议包设计：信息编码与解码，设计一个协议包的类
 - [ ] 更多样式的server控制台输出
+- [ ] `server.h`与`server.cpp`实现，`main.cpp`完成最终程序
 
 ---
 
