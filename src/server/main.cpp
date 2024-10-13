@@ -6,8 +6,13 @@
  */
 
 #include "include/server.h"
+#include <string>
 
 int main(int argc, char *argv[])
 {
+    std::string type(argv[1]);
+    Server server(type);
+    server.init();
+    server.run();
     return 0;
 }

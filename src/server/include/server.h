@@ -25,12 +25,25 @@
 class Server {
 public:
 
+    /**
+     * Constructor of `Server` class to initialize the server.
+     * @param type Server type in string format: `TCP` or `UDP`
+     */
     Server(std::string type);
 
+    /**
+     * Destructor of `Server` class.
+     */
     ~Server();
 
+    /**
+     * Server initializor by creating a socket, setting socket options, and binding it to the specified IP address and port.
+     */
     void init();
 
+    /**
+     * Server runner.
+     */
     void run();
 
 private:

@@ -9,6 +9,7 @@
 #include "../include/server.h"
 
 /* Public methods */
+
 Server::Server(std::string type)
 {
     if (type == "TCP") {
@@ -23,6 +24,16 @@ Server::Server(std::string type)
 Server::~Server()
 {
     delete server;
+}
+
+void Server::init()
+{
+    server->init();
+}
+
+void Server::run()
+{
+    server->run();
 }
 
 /* Utility functions */

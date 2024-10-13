@@ -12,7 +12,7 @@
 #define SERVER_QUEUE_SIZE 256 // Maximum number of waiting clients in server queue.
 
 /* Server IP and port. */
-#define SERVER_IP "0.0.0.0" // Server ip.
+#define SERVER_IP "127.0.0.1" // Server ip.
 #define SERVER_PORT 3373 // Server port.
 
 /* Server buffer size. */

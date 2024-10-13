@@ -1,35 +1,42 @@
 # Description: Makefile for server.
-# Assemble: make all
-# Clean: make clean
-# Test: make test
 # Author: lqy
 # Date: 2024-10-13
 
-# Variables
-
+# Compiler and flags.
 CXX = g++
 CXXFLAGS = -Wall -g -std=c++11 -Iinclude
 
+# Source files and object files.
 SRC = src
+SRCS = $(wildcard $(SRC)/*.cpp) main.cpp
 OD = obj
-OBJS = $(patsubst $(SRC)/%.cpp, $(OD)/%.o, $(wildcard $(SRC)/*.cpp))
+OBJS = $(patsubst %.cpp, $(OD)/%.o, $(notdir $(SRCS)))
 
-TARGET = server
+# Target executable.
+BIN = bin
+TARGET = $(BIN)/server
+
+# Utilities.
 RM = rm -f
 
 # Rules
-
-.PHONY: all clean
-
-$(shell mkdir -p $(OD))
-
 all: $(TARGET)
 
-$(TARGET): $(OBJS)
+$(TARGET): $(OBJS) | $(BIN)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-$(OD)/%.o: $(SRC)/%.cpp
+$(OD)/%.o: $(SRC)/%.cpp | $(OD)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+$(OD)/main.o: main.cpp | $(OD)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(OD):
+	mkdir -p $(OD)
+
+$(BIN):
+	mkdir -p $(BIN)
+
+.PHONY: clean
 clean:
-	$(RM) $(OD)/*.o $(BIN) $(TARGET)
+	$(RM) $(OD)/*.o $(TARGET)
