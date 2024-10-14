@@ -16,10 +16,14 @@ OBJS = $(patsubst %.cpp, $(OD)/%.o, $(notdir $(SRCS)))
 BIN = bin
 TARGET = $(BIN)/server
 
+# Tests.
+TEST = test
+TESTCASE = $(BIN)/client
+
 # Utilities.
 RM = rm -rf
 
-# Rules
+# Build target.
 all: $(TARGET)
 
 $(TARGET): $(OBJS) | $(BIN)
@@ -37,6 +41,13 @@ $(OD):
 $(BIN):
 	mkdir -p $(BIN)
 
+# Test cases.
+test: $(TESTCASE)
+
+$(TESTCASE): $(TEST)/client.cpp | $(BIN)
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+# Clean.
 .PHONY: clean
 clean:
 	$(RM) $(OD) $(BIN)
