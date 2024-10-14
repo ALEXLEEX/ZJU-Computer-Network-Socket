@@ -6,8 +6,10 @@
  * @date 2024-10-09
  */
 
+#include "../include/server_base.h"
 #include "../include/server_tcp.h"
 #include "../include/client_info.h"
+#include "../include/utils.h"
 #include <vector>
 #include <thread>
 #include <system_error>

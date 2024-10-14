@@ -10,24 +10,10 @@
 
 /* Header files */
 
-#include "micros.h"
+#include "utils.h"
 #include "client_info.h"
 #include <string>
 #include <vector>
-
-/* Utilities */
-
-enum class ServerType {
-    TCP,
-    UDP
-};
-
-enum class ServerMsgType {
-    MSG,
-    ERROR,
-    INFO,
-    WELCOME
-};
 
 /* Main class */
 

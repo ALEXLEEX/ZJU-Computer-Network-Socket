@@ -1,12 +1,26 @@
 /**
- * @file micros.h
+ * @file utils.h
  * @author lqy
- * @brief Default configuration for server.
+ * @brief Utilities for server.
  * @date 2024-10-07
  */
 
-#ifndef _SERVER_MICROS_H
-#define _SERVER_MICROS_H
+#ifndef _SERVER_UTILS_H
+#define _SERVER_UTILS_H
+
+/* Server type. */
+enum class ServerType {
+    TCP,
+    UDP
+};
+
+/* Server message type. */
+enum class ServerMsgType {
+    MSG,
+    ERROR,
+    INFO,
+    WELCOME
+};
 
 /* Server queue size. */
 #define SERVER_QUEUE_SIZE 256 // Maximum number of waiting clients in server queue.
@@ -21,4 +35,4 @@
 /* Server timeout. */
 #define SERVER_TIMEOUT 10.0 // Maximum time to wait for client response.
 
-#endif /* _SERVER_MICROS_H */
+#endif /* _SERVER_UTILS_H */

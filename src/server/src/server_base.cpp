@@ -8,6 +8,7 @@
 
 #include "../include/server_base.h"
 #include "../include/client_info.h"
+#include "../include/utils.h"
 #include <iostream>
 #include <string>
 #include <sys/socket.h>
