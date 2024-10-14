@@ -66,10 +66,10 @@ protected:
     virtual void getSocket() = 0;
 
     /* Set server socket options. */
-    void setOptions(double timeout);
+    void setOptions();
 
     /* Bind server IP address and port. */
-    void bindAddress(std::string serverIp, int serverPort);
+    void bindAddress();
 
     /* Start server main thread. */
     void startSocketThread();
@@ -82,6 +82,9 @@ protected:
 
     /* Close the connection from the client. */
     void closeClient(ClientInfo& client);
+
+    /* Close the server. */
+    void closeServer();
 
 };
 

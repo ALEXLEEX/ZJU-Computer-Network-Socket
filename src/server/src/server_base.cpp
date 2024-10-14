@@ -29,14 +29,8 @@ Server_Base::Server_Base(std::string ip, int port, int queueSize, int bufferSize
 
 Server_Base::~Server_Base()
 {
-    // Disconnect all clients.
-    for (ClientInfo& client: clientQueue) {
-        if (client.getStatus()) {
-            client.setStatus(0);
-        }
-    }
+    closeServer();
     clientQueue.clear();
-    close(serverSocket); // Close the server socket.
     printMessage(ServerMsgType::WELCOME, "Server deconstructed, GOODBYE!!!");
 }
 
@@ -44,8 +38,8 @@ void Server_Base::init()
 {
     printMessage(ServerMsgType::WELCOME, "Server is initializing...");
     getSocket();
-    setOptions(timeout);
-    bindAddress(serverIp, serverPort);
+    setOptions();
+    bindAddress();
     printMessage(ServerMsgType::WELCOME, "Server initialization completed, WELCOME!!!");
 }
 
@@ -59,6 +53,7 @@ void Server_Base::printMessage(ServerMsgType msgType, std::string msg)
             break;
         case ServerMsgType::ERROR:
             std::cerr << "\033[31m[Server] " << msg << "\033[0m" << std::endl;
+            closeServer();
             exit(EXIT_FAILURE);
         case ServerMsgType::INFO:
             std::cout << "\033[32m[Server] " << msg << "\033[0m" << std::endl;
@@ -70,7 +65,7 @@ void Server_Base::printMessage(ServerMsgType msgType, std::string msg)
     return ;
 }
 
-void Server_Base::setOptions(double timeout)
+void Server_Base::setOptions()
 {
     // Set reuse address.
     int on = 1;
@@ -84,7 +79,7 @@ void Server_Base::setOptions(double timeout)
     printMessage(ServerMsgType::INFO, "Set server waiting timeout: " + std::to_string(timeout) + ".");
 }
 
-void Server_Base::bindAddress(std::string serverIp, int serverPort)
+void Server_Base::bindAddress()
 {
     struct sockaddr_in serverAddress;
     serverAddress.sin_family = AF_INET;
@@ -92,6 +87,7 @@ void Server_Base::bindAddress(std::string serverIp, int serverPort)
     serverAddress.sin_port = htons(serverPort);
 
     if (bind(serverSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) < 0) {
+        close(serverSocket);
         printMessage(ServerMsgType::ERROR, "Failed to bind address.");
     }
     printMessage(ServerMsgType::INFO, "Bind server to IP: " + serverIp + ", port: " + std::to_string(serverPort) + ".");
@@ -101,9 +97,10 @@ void Server_Base::startSocketThread()
 {
     try {
         printMessage(ServerMsgType::INFO, "The server is now running...");
-        std::thread thread(&Server_Base::worker, this);
-        thread.join();
-        printMessage(ServerMsgType::INFO, "Server shuts down.");
+        std::thread thread(&Server_Base::worker, this); // Main thread.
+        thread.join(); // TODO: fix join -> detach
+        // TODO: add server cmds(quit, ...) 
+        closeServer();
     } catch (const std::system_error& e) {
         printMessage(ServerMsgType::ERROR, e.what());
     }
@@ -111,9 +108,24 @@ void Server_Base::startSocketThread()
 
 void Server_Base::closeClient(ClientInfo& client)
 {
-    sendResponse(client, "Disconnected from server(" + serverIp + ":" + std::to_string(serverPort) + ").");
+    sendResponse(client, "Disconnected from server (" + serverIp + ":" + std::to_string(serverPort) + ").");
     close(client.getSocket());
     client.setStatus(0); // Shut down the sub thread.
-    client.setID(-1);
     printMessage(ServerMsgType::INFO, "Client " + std::to_string(client.getID()) + " disconnected from server.");
+}
+
+void Server_Base::closeServer()
+{
+    // Disconnect all clients.
+    for (ClientInfo& client: clientQueue) {
+        if (client.getStatus()) {
+            closeClient(client);
+        }
+    }
+    // Close the server socket.
+    if (serverSocket >= 0) {
+        close(serverSocket);
+        serverSocket = -1;
+    }
+    printMessage(ServerMsgType::WELCOME, "Server shuts down.");
 }

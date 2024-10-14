@@ -10,16 +10,12 @@
 
 /* Header files. */
 
+#include "utils.h"
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <iostream>
 #include <string>
 #include <thread>
-
-/* Utilities */
-
-using ClientID = int;
-using ClientAddr = struct sockaddr_in;
 
 /* Main class. */
 

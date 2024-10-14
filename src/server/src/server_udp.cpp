@@ -23,7 +23,6 @@ Server_UDP::Server_UDP(std::string ip, int port, int queueSize, int bufferSize, 
 void Server_UDP::run()
 {
     startSocketThread();
-    // TODO: add server cmds(quit, ...) here
 }
 
 /* Utility functions */
@@ -38,8 +37,8 @@ void Server_UDP::getSocket()
 void Server_UDP::worker()
 {
     char buffer[bufferSize];
-    struct sockaddr_in clientAddr;
-    socklen_t len = sizeof(clientAddr);
+    ClientAddr clientAddr;
+    ClientAddrLen len = sizeof(clientAddr);
 
     while (1) {
         ssize_t rc = recvfrom(serverSocket, buffer, sizeof(buffer), 0, (struct sockaddr *)&clientAddr, &len);
@@ -81,4 +80,16 @@ void Server_UDP::saveConnectInfo(ClientAddr clientAddr, int clientStatus)
             other.setStatus(0); // Clear the status.
         }
     }
+}
+
+void Server_UDP::handleRequest(ClientInfo& client, std::string message)
+{
+    /**
+     * @todo Handle client request.
+     * @brief 1. Send response to client of receiving message.
+     *        2. Decode packet and print to server console.
+     *        3. Parse request.
+     *        4. Handle request and response.
+     *        5. set return code: if the client quits, set return code to -1.
+     */
 }

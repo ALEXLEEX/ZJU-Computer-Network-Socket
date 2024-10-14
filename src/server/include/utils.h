@@ -8,6 +8,13 @@
 #ifndef _SERVER_UTILS_H
 #define _SERVER_UTILS_H
 
+#include <sys/socket.h>
+
+/* Client ID and address type. */
+using ClientID = int;
+using ClientAddr = struct sockaddr_in;
+using ClientAddrLen = socklen_t;
+
 /* Server type. */
 enum class ServerType {
     TCP,
@@ -34,5 +41,8 @@ enum class ServerMsgType {
 
 /* Server timeout. */
 #define SERVER_TIMEOUT 10.0 // Maximum time to wait for client response.
+
+/* Server debugger. */
+#define LOG(msg) std::cout << msg << std::endl // Server debugger.
 
 #endif /* _SERVER_UTILS_H */

@@ -27,7 +27,6 @@ void Server_TCP::run()
 {
     startListen();
     startSocketThread();
-    // TODO: add server cmds(quit, ...) here
 }
 
 /* Utility functions */
@@ -56,18 +55,15 @@ void Server_TCP::worker()
         // TODO: add server cmds: while(1) -> while(serverStatus) { ... }
     }
 
-    // Server shuts down, closin all connections and close server socket.
-    for (ClientInfo& client: clientQueue)
-        if (client.getStatus()) closeClient(client);
-    close(serverSocket);
-    serverSocket = -1;
+    // Server shuts down.
+    closeServer();
 }
 
 void Server_TCP::startClientThread(int clientSocket)
 {
     try {
         std::thread clientThread(&Server_TCP::process, this, clientSocket);
-        clientThread.join();
+        clientThread.detach();
     } catch (const std::system_error& e) {
         printMessage(ServerMsgType::ERROR, e.what());
     }
@@ -139,5 +135,6 @@ void Server_TCP::handleRequest(ClientInfo& client, std::string message)
      *        3. Parse request.
      *        4. Handle request and response.
      *        5. set return code: if the client quits, set return code to -1.
+     * @note Maybe can be a base class method.
      */
 }
