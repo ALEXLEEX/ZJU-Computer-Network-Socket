@@ -54,6 +54,7 @@ protected:
     int serverSocket; // Server socket.
     std::string serverIp; // Server IP.
     int serverPort; // Server port.
+    ServerStatus serverStatus; // Server status.
     int queueSize; // Server waiting client queue size.
     int bufferSize; // Server received message buffer size.
     double timeout; // Server waiting timeout.

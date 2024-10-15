@@ -40,17 +40,15 @@ void Server_UDP::worker()
     ClientAddr clientAddr;
     ClientAddrLen len = sizeof(clientAddr);
 
-    while (1) {
+    serverStatus = ServerStatus::RUN;
+    while (serverStatus == ServerStatus::RUN) {
         ssize_t rc = recvfrom(serverSocket, buffer, sizeof(buffer), 0, (struct sockaddr *)&clientAddr, &len);
         if (rc <= 0) break;
         // TODO: send response to client.
         std::string message(buffer, rc);
         printMessage(ServerMsgType::MSG, "[Client|" + std::string(inet_ntoa(clientAddr.sin_addr)) + ":" + std::to_string(ntohs(clientAddr.sin_port)) + "] " + message);
-        // TODO: add server cmds: while(1) -> while(serverStatus) { ... }
         // TODO: add handle client request with saveConnectInfo.
     }
-
-    // TODO: close all clients.
 }
 
 void Server_UDP::sendResponse(ClientInfo client, std::string message)

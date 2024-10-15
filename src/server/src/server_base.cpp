@@ -22,7 +22,8 @@
 /* Public methods */
 
 Server_Base::Server_Base(std::string ip, int port, int queueSize, int bufferSize, double timeout):
-    serverSocket(-1), serverIp(ip), serverPort(port), queueSize(queueSize), bufferSize(bufferSize), timeout(timeout)
+    serverSocket(-1), serverIp(ip), serverPort(port), serverStatus(ServerStatus::UNINIT),
+    queueSize(queueSize), bufferSize(bufferSize), timeout(timeout)
 {
     clientQueue = std::vector<ClientInfo>(queueSize, ClientInfo());
     activeClients = ActiveClients();
@@ -41,6 +42,7 @@ void Server_Base::init()
     getSocket();
     setOptions();
     bindAddress();
+    serverStatus = ServerStatus::READY;
     printMessage(ServerMsgType::WELCOME, "Server initialization completed, WELCOME!!!");
 }
 
@@ -123,9 +125,8 @@ void Server_Base::closeServer()
         if (client.getStatus()) closeClient(client);
     }
     // Close the server socket.
-    if (serverSocket >= 0) {
-        close(serverSocket);
-        serverSocket = -1;
-    }
+    close(serverSocket);
+    serverSocket = -1;
+    serverStatus = ServerStatus::UNINIT;
     printMessage(ServerMsgType::WELCOME, "Server shuts down.");
 }

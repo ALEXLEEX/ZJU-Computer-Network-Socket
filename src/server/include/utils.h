@@ -24,6 +24,13 @@ enum class ServerType {
     UDP
 };
 
+/* Server status type. */
+enum class ServerStatus {
+    UNINIT,
+    READY,
+    RUN
+};
+
 /* Server message type. */
 enum class ServerMsgType {
     MSG,

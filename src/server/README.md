@@ -11,6 +11,7 @@ Author: [lqy](https://github.com/lEEExp3rt)
 - [x] 关闭server时关闭所有连接
 - [x] `Server_UDP::saveConnectInfo`修复
 - [x] `server.h`与`server.cpp`实现，`main.cpp`完成最终程序
+- [ ] Server状态添加：检测是否init
 - [ ] Server命令
 - [ ] 协议包设计：信息编码与解码，设计一个协议包的类
 - [ ] 接收到客户端的指令分析与对应响应

@@ -48,15 +48,12 @@ void Server_TCP::startListen()
 void Server_TCP::worker()
 {
     // Server starts running, wait and accept.
-    while (1) {
+    serverStatus = ServerStatus::RUN;
+    while (serverStatus == ServerStatus::RUN) {
         int clientSocket = accept(serverSocket, nullptr, nullptr);
         if (clientSocket < 0) printMessage(ServerMsgType::ERROR, "Failed to accept client.");
         startClientThread(clientSocket);
-        // TODO: add server cmds: while(1) -> while(serverStatus) { ... }
     }
-
-    // Server shuts down.
-    closeServer();
 }
 
 void Server_TCP::startClientThread(int clientSocket)
