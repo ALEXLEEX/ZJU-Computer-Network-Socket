@@ -25,6 +25,7 @@ Server_Base::Server_Base(std::string ip, int port, int queueSize, int bufferSize
     serverSocket(-1), serverIp(ip), serverPort(port), queueSize(queueSize), bufferSize(bufferSize), timeout(timeout)
 {
     clientQueue = std::vector<ClientInfo>(queueSize, ClientInfo());
+    activeClients = ActiveClients();
 }
 
 Server_Base::~Server_Base()
@@ -111,6 +112,7 @@ void Server_Base::closeClient(ClientInfo& client)
     sendResponse(client, "Disconnected from server (" + serverIp + ":" + std::to_string(serverPort) + ").");
     close(client.getSocket());
     client.setStatus(0); // Shut down the sub thread.
+    activeClients.erase(client.getID());
     printMessage(ServerMsgType::INFO, "Client " + std::to_string(client.getID()) + " disconnected from server.");
 }
 
@@ -118,9 +120,7 @@ void Server_Base::closeServer()
 {
     // Disconnect all clients.
     for (ClientInfo& client: clientQueue) {
-        if (client.getStatus()) {
-            closeClient(client);
-        }
+        if (client.getStatus()) closeClient(client);
     }
     // Close the server socket.
     if (serverSocket >= 0) {

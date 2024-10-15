@@ -68,6 +68,7 @@ void Server_UDP::saveConnectInfo(ClientAddr clientAddr, int clientStatus)
                 client.setStatus(1);
                 client.setAddr(clientAddr);
                 client.setID(id);
+                activeClients.insert(id);
                 break;
             }
             id++;

@@ -58,6 +58,7 @@ protected:
     int bufferSize; // Server received message buffer size.
     double timeout; // Server waiting timeout.
     std::vector<ClientInfo> clientQueue; // Client queue.
+    ActiveClients activeClients; // Active clients.
 
     /* Print messages with different types. */
     void printMessage(ServerMsgType msgType, std::string msg);

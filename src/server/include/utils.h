@@ -9,11 +9,14 @@
 #define _SERVER_UTILS_H
 
 #include <sys/socket.h>
+#include <vector>
+#include <unordered_set>
 
 /* Client ID and address type. */
 using ClientID = int;
 using ClientAddr = struct sockaddr_in;
 using ClientAddrLen = socklen_t;
+using ActiveClients = std::unordered_set<ClientID>;
 
 /* Server type. */
 enum class ServerType {
