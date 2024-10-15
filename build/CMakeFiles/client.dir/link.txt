@@ -1,0 +1,1 @@
+/usr/bin/g++ -g CMakeFiles/client.dir/main.cpp.o CMakeFiles/client.dir/src/functions.cpp.o CMakeFiles/client.dir/src/interface.cpp.o CMakeFiles/client.dir/src/socket.cpp.o -o /home/wzj/24fall/ZJU-Computer-Network-Socket/src/client/bin/client 
