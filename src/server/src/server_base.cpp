@@ -54,13 +54,16 @@ void Server_Base::printMessage(ServerMsgType msgType, std::string msg)
         case ServerMsgType::MSG:
             std::cout << "\033[37m" << msg << "\033[0m" << std::endl;
             break;
+        case ServerMsgType::INFO:
+            std::cout << "\033[32m[Server] " << msg << "\033[0m" << std::endl;
+            break;
+        case ServerMsgType::WARNING:
+            std::cout << "\033[33m[Server] " << msg << "\033[0m" << std::endl;
+            break;
         case ServerMsgType::ERROR:
             std::cerr << "\033[31m[Server] " << msg << "\033[0m" << std::endl;
             closeServer();
             exit(EXIT_FAILURE);
-        case ServerMsgType::INFO:
-            std::cout << "\033[32m[Server] " << msg << "\033[0m" << std::endl;
-            break;
         case ServerMsgType::WELCOME:
             std::cout << "\033[34m[Server] " << msg << "\033[0m" << std::endl;
             break;
@@ -98,15 +101,15 @@ void Server_Base::bindAddress()
 
 void Server_Base::startSocketThread()
 {
+    printMessage(ServerMsgType::INFO, "The server is now running...");
     try {
-        printMessage(ServerMsgType::INFO, "The server is now running...");
         std::thread thread(&Server_Base::worker, this); // Main thread.
         thread.join(); // TODO: fix join -> detach
         // TODO: add server cmds(quit, ...) 
-        closeServer();
     } catch (const std::system_error& e) {
         printMessage(ServerMsgType::ERROR, e.what());
     }
+    closeServer();
 }
 
 void Server_Base::closeClient(ClientInfo& client)

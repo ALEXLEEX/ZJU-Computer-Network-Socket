@@ -34,8 +34,9 @@ enum class ServerStatus {
 /* Server message type. */
 enum class ServerMsgType {
     MSG,
-    ERROR,
     INFO,
+    WARNING,
+    ERROR,
     WELCOME
 };
 

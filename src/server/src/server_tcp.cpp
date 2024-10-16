@@ -25,6 +25,10 @@ Server_TCP::Server_TCP(std::string ip, int port, int queueSize, int bufferSize, 
 
 void Server_TCP::run()
 {
+    if (serverStatus != ServerStatus::READY) {
+        printMessage(ServerMsgType::WARNING, "Server is not ready.");
+        throw std::runtime_error("Server is not ready.");
+    }
     startListen();
     startSocketThread();
 }
