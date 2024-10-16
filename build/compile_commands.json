@@ -1,0 +1,26 @@
+[
+{
+  "directory": "/home/wzj/24fall/ZJU-Computer-Network-Socket/build",
+  "command": "/usr/bin/g++  -I/home/wzj/24fall/ZJU-Computer-Network-Socket/src/client/include -g -o CMakeFiles/client.dir/main.cpp.o -c /home/wzj/24fall/ZJU-Computer-Network-Socket/src/client/main.cpp",
+  "file": "/home/wzj/24fall/ZJU-Computer-Network-Socket/src/client/main.cpp",
+  "output": "CMakeFiles/client.dir/main.cpp.o"
+},
+{
+  "directory": "/home/wzj/24fall/ZJU-Computer-Network-Socket/build",
+  "command": "/usr/bin/g++  -I/home/wzj/24fall/ZJU-Computer-Network-Socket/src/client/include -g -o CMakeFiles/client.dir/src/functions.cpp.o -c /home/wzj/24fall/ZJU-Computer-Network-Socket/src/client/src/functions.cpp",
+  "file": "/home/wzj/24fall/ZJU-Computer-Network-Socket/src/client/src/functions.cpp",
+  "output": "CMakeFiles/client.dir/src/functions.cpp.o"
+},
+{
+  "directory": "/home/wzj/24fall/ZJU-Computer-Network-Socket/build",
+  "command": "/usr/bin/g++  -I/home/wzj/24fall/ZJU-Computer-Network-Socket/src/client/include -g -o CMakeFiles/client.dir/src/interface.cpp.o -c /home/wzj/24fall/ZJU-Computer-Network-Socket/src/client/src/interface.cpp",
+  "file": "/home/wzj/24fall/ZJU-Computer-Network-Socket/src/client/src/interface.cpp",
+  "output": "CMakeFiles/client.dir/src/interface.cpp.o"
+},
+{
+  "directory": "/home/wzj/24fall/ZJU-Computer-Network-Socket/build",
+  "command": "/usr/bin/g++  -I/home/wzj/24fall/ZJU-Computer-Network-Socket/src/client/include -g -o CMakeFiles/client.dir/src/socket.cpp.o -c /home/wzj/24fall/ZJU-Computer-Network-Socket/src/client/src/socket.cpp",
+  "file": "/home/wzj/24fall/ZJU-Computer-Network-Socket/src/client/src/socket.cpp",
+  "output": "CMakeFiles/client.dir/src/socket.cpp.o"
+}
+]
