@@ -28,8 +28,21 @@ public:
     /**
      * Constructor of `Server` class to initialize the server.
      * @param type Server type in string format: `TCP` or `UDP`
+     * @param ip Server ip address in string format.
+     * @param port Server port number.
+     * @param queueSize Maximum number of messages in the queue.
+     * @param bufferSize Maximum size of each message in bytes.
+     * @param timeout Timeout for receiving messages in seconds.
      */
-    Server(std::string type);
+    Server(std::string type, std::string ip = SERVER_IP, int port = SERVER_PORT, int queueSize = SERVER_QUEUE_SIZE, int bufferSize = SERVER_BUFFER_SIZE, double timeout = SERVER_TIMEOUT);
+
+    /**
+     * Constructor of `Server` class to initialize the server.
+     * @param argc Number of command line arguments.
+     * @param argv Command line arguments.
+     * @note This constructor provides the interface for CLIs.
+     */
+    Server(int argc, char *argv[]);
 
     /**
      * Destructor of `Server` class.
@@ -56,9 +69,6 @@ public:
 private:
 
     Server_Base* server;
-    std::string ip;
-    int port;
-    int queueSize;
 
 };
 

@@ -32,7 +32,7 @@ public:
      * @param bufferSize Server buffer for receiving data
      * @param timeout Server waiting connection timeout
      */
-    Server_TCP(std::string ip, int port, int queueSize = SERVER_QUEUE_SIZE, int bufferSize = SERVER_BUFFER_SIZE, double timeout = SERVER_TIMEOUT);
+    Server_TCP(std::string ip, int port, int queueSize, int bufferSize, double timeout);
 
     /**
      * Destructor of `Server_TCP` class.

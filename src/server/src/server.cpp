@@ -12,14 +12,37 @@
 
 /* Public methods */
 
-Server::Server(std::string type)
+Server::Server(std::string type, std::string ip, int port, int queueSize, int bufferSize, double timeout)
 {
     if (type == "TCP") {
-        server = new Server_TCP(SERVER_IP, SERVER_PORT);
+        server = new Server_TCP(ip, port, queueSize, bufferSize, timeout);
     } else if (type == "UDP") {
-        server = new Server_UDP(SERVER_IP, SERVER_PORT);
+        server = new Server_UDP(ip, port, queueSize, bufferSize, timeout);
     } else {
         server = nullptr;
+    }
+}
+
+Server::Server(int argc, char *argv[])
+{
+    if (argc < 2) {
+        std::cerr << "Usage: " << argv[0] << " <server_type> [ip] [port] [max_connections] [message_buffer_size] [wait_timeout]" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    std::string type = argv[1];
+    std::string ip = (argc > 2) ? argv[2] : SERVER_IP;
+    int port = (argc > 3) ? std::stoi(argv[3]) : SERVER_PORT;
+    int queueSize = (argc > 4) ? std::stoi(argv[4]) : SERVER_QUEUE_SIZE;
+    int bufferSize = (argc > 5) ? std::stoi(argv[5]) : SERVER_BUFFER_SIZE;
+    double timeout = (argc > 6) ? std::stod(argv[6]) : SERVER_TIMEOUT;
+    if (type == "TCP") {
+        server = new Server_TCP(ip, port, queueSize, bufferSize, timeout);
+    } else if (type == "UDP") {
+        server = new Server_UDP(ip, port, queueSize, bufferSize, timeout);
+    } else {
+        std::cerr << "Invalid server type: " << type << "!" << std::endl;
+        server = nullptr;
+        exit(EXIT_FAILURE);
     }
 }
 

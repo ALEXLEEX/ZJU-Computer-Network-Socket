@@ -32,7 +32,7 @@ public:
      * @param bufferSize Server buffer for receiving data
      * @param timeout Server waiting connection timeout
      */
-    Server_Base(std::string ip, int port, int queueSize = SERVER_QUEUE_SIZE, int bufferSize = SERVER_BUFFER_SIZE, double timeout = SERVER_TIMEOUT);
+    Server_Base(std::string ip, int port, int queueSize, int bufferSize, double timeout);
 
     /**
      * Destructor of `Server_Base` class.
@@ -40,7 +40,8 @@ public:
     virtual ~Server_Base();
 
     /**
-     * Server initializor by creating a socket, setting socket options, and binding it to the specified IP address and port.
+     * Server initializor by creating a socket, setting socket options,
+     * and binding it to the specified IP address and port.
      */
     void init();
 

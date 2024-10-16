@@ -6,12 +6,10 @@
  */
 
 #include "include/server.h"
-#include <string>
 
 int main(int argc, char *argv[])
 {
-    // TODO: judge by argc.
-    Server server(argv[1]);
+    Server server(argc, argv);
     server.help();
     server.cmds();
     return 0;
