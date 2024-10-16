@@ -26,18 +26,22 @@ enum class ServerType {
 
 /* Server status type. */
 enum class ServerStatus {
-    UNINIT,
-    READY,
-    RUN
+    UNINIT, // Uninitialized.
+    READY, // Initialized and ready.
+    RUN, // Running.
+    STOP, // Stopped.
+    EXIT 
 };
 
 /* Server message type. */
 enum class ServerMsgType {
-    MSG,
-    INFO,
-    WARNING,
-    ERROR,
-    WELCOME
+    MSG, // Message.
+    WELCOME, // Welcome message.
+    INFO, // Information.
+    NOTE, // Note.
+    WARNING, // Warning.
+    ERROR, // Server error.
+    GOODBYE // Goodbye message.
 };
 
 /* Server queue size. */

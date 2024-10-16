@@ -10,9 +10,9 @@
 
 int main(int argc, char *argv[])
 {
-    std::string type(argv[1]);
-    Server server(type);
-    server.init();
-    server.run();
+    // TODO: judge by argc.
+    Server server(argv[1]);
+    server.help();
+    server.cmds();
     return 0;
 }

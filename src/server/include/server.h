@@ -37,18 +37,28 @@ public:
     ~Server();
 
     /**
-     * Server initializor by creating a socket, setting socket options, and binding it to the specified IP address and port.
+     * Read server commands and parse and pass to server.
+     * @note Supported commands:
+     * @note - `init`: initialize the server.
+     * @note - `run`/`start`: run the server.
+     * @note - `stop`: stop the server running.
+     * @note - `quit`/`exit`: quit the server.
+     * @note - `help`: show help information.
      */
-    void init();
+    void cmds();
 
     /**
-     * Server runner.
+     * Server helping menu.
+     * @note Show the supported commands and their usage.
      */
-    void run();
+    void help();
 
 private:
 
     Server_Base* server;
+    std::string ip;
+    int port;
+    int queueSize;
 
 };
 

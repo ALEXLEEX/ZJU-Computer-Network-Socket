@@ -49,6 +49,16 @@ public:
      */
     virtual void run() = 0;
 
+    /**
+     * Stop the server.
+     */
+    void stop();
+
+    /**
+     * Stop and exit the server.
+     */
+    void quit();
+
 protected:
 
     int serverSocket; // Server socket.

@@ -27,23 +27,44 @@ Server_Base::Server_Base(std::string ip, int port, int queueSize, int bufferSize
 {
     clientQueue = std::vector<ClientInfo>(queueSize, ClientInfo());
     activeClients = ActiveClients();
+    printMessage(ServerMsgType::WELCOME, "Welcome to the server!!!");
 }
 
 Server_Base::~Server_Base()
 {
     closeServer();
     clientQueue.clear();
-    printMessage(ServerMsgType::WELCOME, "Server deconstructed, GOODBYE!!!");
+    activeClients.clear();
+    printMessage(ServerMsgType::GOODBYE, "Server exited, GOODBYE!!!");
 }
 
 void Server_Base::init()
 {
-    printMessage(ServerMsgType::WELCOME, "Server is initializing...");
+    printMessage(ServerMsgType::NOTE, "Server is initializing...");
     getSocket();
     setOptions();
     bindAddress();
     serverStatus = ServerStatus::READY;
-    printMessage(ServerMsgType::WELCOME, "Server initialization completed, WELCOME!!!");
+    printMessage(ServerMsgType::NOTE, "Server initialization completed.");
+}
+
+void Server_Base::stop()
+{
+    switch (serverStatus) {
+        case ServerStatus::RUN:
+            closeServer();
+            printMessage(ServerMsgType::NOTE, "Server shuts down.");
+            break;
+        default:
+            printMessage(ServerMsgType::WARNING, "Server is not running.");
+    }
+    return ;
+}
+
+void Server_Base::quit()
+{
+    serverStatus = ServerStatus::EXIT;
+    printMessage(ServerMsgType::NOTE, "Exitting the server...");
 }
 
 /* Utility functions */
@@ -54,18 +75,24 @@ void Server_Base::printMessage(ServerMsgType msgType, std::string msg)
         case ServerMsgType::MSG:
             std::cout << "\033[37m" << msg << "\033[0m" << std::endl;
             break;
+        case ServerMsgType::WELCOME:
+            std::cout << "\033[1;31m[WELCOME] " << msg << "\033[0m" << std::endl;
+            break;
         case ServerMsgType::INFO:
             std::cout << "\033[32m[Server] " << msg << "\033[0m" << std::endl;
             break;
+        case ServerMsgType::NOTE:
+            std::cout << "\033[34m[Server] " << msg << "\033[0m" << std::endl;
+            break;
         case ServerMsgType::WARNING:
-            std::cout << "\033[33m[Server] " << msg << "\033[0m" << std::endl;
+            std::cout << "\033[33m[WARNING] " << msg << "\033[0m" << std::endl;
             break;
         case ServerMsgType::ERROR:
-            std::cerr << "\033[31m[Server] " << msg << "\033[0m" << std::endl;
+            std::cerr << "\033[31m[ERROR] " << msg << "\033[0m" << std::endl;
             closeServer();
             exit(EXIT_FAILURE);
-        case ServerMsgType::WELCOME:
-            std::cout << "\033[34m[Server] " << msg << "\033[0m" << std::endl;
+        case ServerMsgType::GOODBYE:
+            std::cout << "\033[1;31m[GOODBYE] " << msg << "\033[0m" << std::endl;
             break;
     }
     return ;
@@ -101,35 +128,37 @@ void Server_Base::bindAddress()
 
 void Server_Base::startSocketThread()
 {
-    printMessage(ServerMsgType::INFO, "The server is now running...");
+    printMessage(ServerMsgType::NOTE, "The server is now running...");
     try {
         std::thread thread(&Server_Base::worker, this); // Main thread.
-        thread.join(); // TODO: fix join -> detach
-        // TODO: add server cmds(quit, ...) 
+        thread.detach();
     } catch (const std::system_error& e) {
         printMessage(ServerMsgType::ERROR, e.what());
     }
-    closeServer();
 }
 
 void Server_Base::closeClient(ClientInfo& client)
 {
-    sendResponse(client, "Disconnected from server (" + serverIp + ":" + std::to_string(serverPort) + ").");
-    close(client.getSocket());
-    client.setStatus(0); // Shut down the sub thread.
-    activeClients.erase(client.getID());
-    printMessage(ServerMsgType::INFO, "Client " + std::to_string(client.getID()) + " disconnected from server.");
+    if (client.getStatus()) {
+        sendResponse(client, "Disconnected from server (" + serverIp + ":" + std::to_string(serverPort) + ").");
+        close(client.getSocket());
+        client.setStatus(0); // Shut down the sub thread.
+        activeClients.erase(client.getID());
+        printMessage(ServerMsgType::INFO, "Client " + std::to_string(client.getID()) + " disconnected from server.");
+    }
+    return ;
 }
 
 void Server_Base::closeServer()
 {
-    // Disconnect all clients.
-    for (ClientInfo& client: clientQueue) {
-        if (client.getStatus()) closeClient(client);
+    if (serverStatus == ServerStatus::RUN) {
+        serverStatus = ServerStatus::STOP; // Set server status.
+        // Disconnect all clients.
+        for (ClientInfo& client: clientQueue) closeClient(client);
     }
     // Close the server socket.
-    close(serverSocket);
-    serverSocket = -1;
-    serverStatus = ServerStatus::UNINIT;
-    printMessage(ServerMsgType::WELCOME, "Server shuts down.");
+    if (serverSocket >= 0) {
+        close(serverSocket);
+        serverSocket = -1;
+    }
 }

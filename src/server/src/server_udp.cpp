@@ -23,8 +23,8 @@ Server_UDP::Server_UDP(std::string ip, int port, int queueSize, int bufferSize, 
 void Server_UDP::run()
 {
     if (serverStatus != ServerStatus::READY) {
-        printMessage(ServerMsgType::WARNING, "Server is not ready.");
-        throw std::runtime_error("Server is not ready.");
+        printMessage(ServerMsgType::WARNING, "Server is not ready, type `init` to get ready.");
+        return ;
     }
     startSocketThread();
 }
@@ -33,6 +33,7 @@ void Server_UDP::run()
 
 void Server_UDP::getSocket()
 {
+    if (serverSocket >= 0) close(serverSocket);
     serverSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (serverSocket < 0) printMessage(ServerMsgType::ERROR, "Failed to create server socket.");
     printMessage(ServerMsgType::INFO, "Get server socket: " + std::to_string(serverSocket) + ".");
@@ -57,7 +58,7 @@ void Server_UDP::worker()
 
 void Server_UDP::sendResponse(ClientInfo client, std::string message)
 {
-    message = "[Server] " + message;
+    message = "\033[32m[Server] " + message + "\033[0m";
     sendto(client.getSocket(), message.c_str(), message.size(), 0, (struct sockaddr *)&client.getAddr(), sizeof(client.getAddr()));
 }
 
@@ -75,7 +76,7 @@ void Server_UDP::saveConnectInfo(ClientAddr clientAddr, int clientStatus)
             }
             id++;
         }
-    } else id = queueSize; // Close connection.
+    } else id = queueSize; // Close connection. TODO: fix
 
     // Close the client's other connections.
     for (ClientInfo& other: clientQueue) {

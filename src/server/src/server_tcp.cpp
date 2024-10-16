@@ -26,8 +26,8 @@ Server_TCP::Server_TCP(std::string ip, int port, int queueSize, int bufferSize, 
 void Server_TCP::run()
 {
     if (serverStatus != ServerStatus::READY) {
-        printMessage(ServerMsgType::WARNING, "Server is not ready.");
-        throw std::runtime_error("Server is not ready.");
+        printMessage(ServerMsgType::WARNING, "Server is not ready, type `init` to get ready.");
+        return ;
     }
     startListen();
     startSocketThread();
@@ -37,6 +37,7 @@ void Server_TCP::run()
 
 void Server_TCP::getSocket()
 {
+    if (serverSocket >= 0) close(serverSocket);
     serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (serverSocket < 0) printMessage(ServerMsgType::ERROR, "Failed to create server socket.");
     printMessage(ServerMsgType::INFO, "Get server socket: " + std::to_string(serverSocket) + ".");
@@ -58,6 +59,7 @@ void Server_TCP::worker()
         if (clientSocket < 0) printMessage(ServerMsgType::ERROR, "Failed to accept client.");
         startClientThread(clientSocket);
     }
+    return ;
 }
 
 void Server_TCP::startClientThread(int clientSocket)
@@ -68,6 +70,7 @@ void Server_TCP::startClientThread(int clientSocket)
     } catch (const std::system_error& e) {
         printMessage(ServerMsgType::ERROR, e.what());
     }
+    return ;
 }
 
 void Server_TCP::process(int clientSocket)
@@ -92,7 +95,7 @@ void Server_TCP::process(int clientSocket)
 
 void Server_TCP::sendResponse(ClientInfo client, std::string message)
 {
-    message = "[Server] " + message;
+    message = "\033[32m[Server] " + message + "\033[0m";
     send(client.getSocket(), message.c_str(), message.size(), 0);
 }
 
