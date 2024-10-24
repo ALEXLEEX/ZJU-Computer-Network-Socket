@@ -12,6 +12,7 @@
 
 /* Packet types */
 enum class PacketType {
+    INVALID,    // Invalid packet.
     REQUEST,    // Request packet.
     RESPONSE,   // Response packet.
     ASSIGNMENT  // Assignment packet.
@@ -19,6 +20,8 @@ enum class PacketType {
 
 /* Content types */
 enum class ContentType {
+    None,                   // No content.
+
     RequestCityName,         // Request city name.
     RequestWeatherInfo,      // Request weather information.
     RequestClientList,       // Request client list.

@@ -24,21 +24,14 @@ class Packet {
 public:
 
     /**
-     * @brief Constructor.
+     * @brief Constructor for creating a packet.
+     * @param info Packet information (Student ID).
      * @param type Packet type.
      * @param id Packet id.
      * @param content Packet content.
-     * @param info Packet information (Student ID).
      * @note Packet content should be set according to the packet type.
      */
-    Packet(PacketType type, PacketID id, ContentType content, std::string info);
-
-    /**
-     * @brief Constructor.
-     * @param data Data to be decoded.
-     * @note This constructor is used when decoding data into packet.
-     */
-    Packet(std::string data);
+    Packet(std::string info, PacketType type = PacketType::INVALID, PacketID id = PacketID(0), ContentType content = ContentType::None);
 
     /**
      * @brief Destructor.
@@ -52,6 +45,12 @@ public:
     void addArg(std::string arg);
 
     /**
+     * @brief Get packet arguments.
+     * @return Packet arguments.
+     */
+    std::vector<std::string> getArgs();
+
+    /**
      * @brief Encode packet into string for transmission.
      * @return Encoded string.
      */
@@ -60,8 +59,9 @@ public:
     /**
      * @brief Decode string to packet data.
      * @param data Data to be decoded.
+     * @return True if decoding is successful, false otherwise.
      */
-    void decode(std::string data);
+    bool decode(std::string data);
 
 private:
 
@@ -75,8 +75,14 @@ private:
     std::string info;              // Packet information.
     std::string checksum;          // Packet checksum.
 
+    /* Convert packet data to string. */
+    std::string to_string();
+
     /* Calculate MD5 checksum of the packet. */
-    void getChecksum();
+    std::string getChecksum(std::string origin);
+
+    /* Validate the packet checksum. */
+    bool validateChecksum();
 
 };
 
