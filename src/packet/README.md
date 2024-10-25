@@ -6,7 +6,39 @@
 
 - [x] 添加包体参数列表
 - [x] 添加终端学号信息的记录
-- [ ] 添加解码端的校验检查功能
+- [x] 添加解码端的校验检查功能
+- [x] `encode`后字段分隔符的调整
+- [ ] 完成本文档
+- [ ] 数据字段中的标记字符转义*
+
+---
+
+## Structure
+
+数据包文件结构如下
+
+```Shell
+.
+├── README.md
+├── include
+│   ├── packet.h
+│   └── utils.h
+├── src
+│   └── packet.cpp
+└── test
+    ├── packet_test.cpp
+    └── test.sh
+```
+
+---
+
+## APIs
+
+详见`include/packet.h`和`include/utils.h`
+
+### 创建数据包
+
+对于要发送数据的端，将业务需求对应的参数传入构造函数完成数据包创建，然后
 
 ---
 

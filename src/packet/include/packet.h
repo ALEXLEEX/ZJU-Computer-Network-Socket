@@ -48,7 +48,7 @@ public:
      * @brief Get packet arguments.
      * @return Packet arguments.
      */
-    std::vector<std::string> getArgs();
+    std::vector<std::string> getArgs() const;
 
     /**
      * @brief Encode packet into string for transmission.
@@ -63,26 +63,32 @@ public:
      */
     bool decode(std::string data);
 
+    /**
+     * @brief Print packet information.
+     * @note For debugging.
+     */
+    void print();
+
 private:
 
+    /* Packet header. */
     PacketType type;               // Packet type.
     PacketID id;                   // Packet id.
     PacketLength length;           // Packet total length.
 
+    /* Packet content. */
     ContentType content;           // Packet content.
     std::vector<std::string> args; // Packet arguments.
 
+    /* Packet checksum. */
     std::string info;              // Packet information.
     std::string checksum;          // Packet checksum.
-
-    /* Convert packet data to string. */
-    std::string to_string();
 
     /* Calculate MD5 checksum of the packet. */
     std::string getChecksum(std::string origin);
 
     /* Validate the packet checksum. */
-    bool validateChecksum();
+    bool validateChecksum(std::string data);
 
 };
 

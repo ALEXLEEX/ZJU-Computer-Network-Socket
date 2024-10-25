@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include <openssl/md5.h>
+#include <iostream>
 
 /* Public methods */
 
@@ -30,80 +31,76 @@ void Packet::addArg(std::string arg)
     length += arg.length();
 }
 
-std::vector<std::string> Packet::getArgs()
+std::vector<std::string> Packet::getArgs() const
 {
     return args;
 }
 
 std::string Packet::encode()
 {
-    std::string data = to_string();
-
-    // Encode packet checksum.
+    std::string data = "";
+    data += std::to_string(static_cast<int>(type)) + "\n";
+    data += std::to_string(static_cast<int>(id)) + "\n";
+    data += std::to_string(length) + "\n";
+    data += std::to_string(static_cast<int>(content)) + "\n";
+    for (const std::string& arg : args) {
+        data += arg + "\r";
+    }
+    data += "\n";
     checksum = getChecksum(data);
-    data += checksum;
-
-    // Add end of packet.
-    data += "|\n";
-
-    return data;
+    return data + checksum + "\n";
 }
 
 bool Packet::decode(std::string data)
 {
-    std::string sep = "|";
-    size_t pos1 = 0;
-    size_t pos2 = data.find(sep, 0);
-    std::vector<std::string> parts;
-
-    // Get packet elements.
-    while (pos2 != std::string::npos) {
-        parts.push_back(data.substr(pos1, pos2 - pos1));
-        pos1 = pos2 + 1;
-        pos2 = data.find(sep, pos1);
-    }
-    parts.push_back(data.substr(pos1));
-
     // Check packet format.
-    if (parts.size() != 7) return false;
-    if (parts[6] != "\n") return false;
+    if (data[data.size() - 1] != '\n') return false;
+    data.erase(data.size() - 1);
 
-    // Parse packet header.
-    type = static_cast<PacketType>(std::stoi(parts[0]));
-    id = static_cast<PacketID>(std::stoi(parts[1]));
-    length = std::stoi(parts[2]);
-    content = static_cast<ContentType>(std::stoi(parts[3]));
+    // Validate packet checksum.
+    size_t pos = data.rfind("\n");
+    if (pos == std::string::npos) return false;
+    checksum = data.substr(pos + 1);
+    data.erase(pos + 1);
+    if (!validateChecksum(data)) return false;
 
-    // Parse packet arguments.
-    std::string argStr = parts[4];
-    sep = ",";
-    pos1 = 0;
-    pos2 = argStr.find(sep, 0);
-    while (pos2 != std::string::npos) {
-        args.push_back(argStr.substr(pos1, pos2 - pos1));
-        pos1 = pos2 + 1;
-        pos2 = argStr.find(sep, pos1);
+    // Parse packet data.
+    pos = data.find("\n", 0);
+    std::vector<std::string> elements;
+    while (pos != std::string::npos) {
+        elements.push_back(data.substr(0, pos));
+        data.erase(0, pos + 1);
+        pos = data.find("\n", 0);
     }
+    if (elements.size() != 5) return false;
 
-    // Parse packet checksum and validate it.
-    checksum = parts[5];
-    if (!validateChecksum()) return false;
+    type = static_cast<PacketType>(std::stoi(elements[0]));
+    id = static_cast<PacketID>(std::stoi(elements[1]));
+    length = std::stoi(elements[2]);
+    content = static_cast<ContentType>(std::stoi(elements[3]));
+
+    pos = elements[4].find("\r", 0);
+    while (pos != std::string::npos) {
+        args.push_back(elements[4].substr(0, pos));
+        elements[4].erase(0, pos + 1);
+        pos = elements[4].find("\r", 0);
+    }
 
     return true;
 }
 
-std::string Packet::to_string()
+void Packet::print()
 {
-    std::string str = "";
-    str += std::to_string(static_cast<int>(type)) + "|";
-    str += std::to_string(static_cast<int>(id)) + "|";
-    str += std::to_string(length) + "|";
-    str += std::to_string(static_cast<int>(content)) + "|";
+    std::cout << "Packet type: " << static_cast<int>(type) << std::endl;
+    std::cout << "Packet id: " << static_cast<int>(id) << std::endl;
+    std::cout << "Packet length: " << length << std::endl;
+    std::cout << "Packet content: " << static_cast<int>(content) << std::endl;
+    std::cout << "Packet arguments: ";
     for (const std::string& arg : args) {
-        str += arg + ",";
+        std::cout << arg << ", ";
     }
-    str += "|";
-    return str;
+    std::cout << std::endl;
+    std::cout << "Packet checksum: " << checksum << std::endl;
 }
 
 /* Utility functions */
@@ -125,7 +122,7 @@ std::string Packet::getChecksum(std::string origin)
     return std::string(md5String);
 }
 
-bool Packet::validateChecksum()
+bool Packet::validateChecksum(std::string data)
 {
-    return checksum == getChecksum(to_string());
+    return checksum == getChecksum(data);
 }
