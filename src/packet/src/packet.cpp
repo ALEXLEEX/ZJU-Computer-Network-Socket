@@ -89,6 +89,21 @@ bool Packet::decode(std::string data)
     return true;
 }
 
+PacketType Packet::getType() const
+{
+    return type;
+}
+
+PacketID Packet::getID() const
+{
+    return id;
+}
+
+ContentType Packet::getContent() const
+{
+    return content;
+}
+
 void Packet::print()
 {
     std::cout << "Packet type: " << static_cast<int>(type) << std::endl;

@@ -36,9 +36,28 @@
 
 详见`include/packet.h`和`include/utils.h`
 
-### 创建数据包
+### 编译
 
-对于要发送数据的端，将业务需求对应的参数传入构造函数完成数据包创建，然后
+```Shell
+g++ -c src/packet.cpp -o packet.o -Iinclude -lssl -lcrypto -w
+```
+
+### 基本流程
+
+1. 创建发送数据包
+   1. 调用构造函数`Packet(std::string info, PacketType type, PacketID id, ContentType content)`，其中`info`字段为学号信息，`type`为数据包类型，`id`为数据包ID，`content`为具体数据包的内容
+   2. 数据包类型、具体数据包内容定义在`include/utils.h`的枚举类中
+2. 添加数据包参数
+   1. 调用`addArg(std::string arg)`添加业务所需的参数，注意遵循协议要求
+3. 编码生成字符
+   1. 调用`encode()`方法生成编码字符串，用于传输
+4. 发送
+5. 接收
+6. 创建接收数据包
+   1. 调用构造函数`Packet(std::string info)`，其中`info`为对方学号信息用于校验
+7. 解码接收数据
+   1. 调用`decode(std::string data)`方法对接收到的编码数据`data`进行解码
+   2. 解码完成和校验成功后，返回值为`true`，否则为`false`
 
 ---
 

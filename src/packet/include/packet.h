@@ -64,6 +64,24 @@ public:
     bool decode(std::string data);
 
     /**
+     * @brief Get packet type.
+     * @return Packet type.
+     */
+    PacketType getType() const;
+
+    /**
+     * @brief Get packet id.
+     * @return Packet id.
+     */
+    PacketID getID() const;
+
+    /**
+     * @brief Get packet content.
+     * @return Packet content.
+     */
+    ContentType getContent() const;
+
+    /**
      * @brief Print packet information.
      * @note For debugging.
      */
