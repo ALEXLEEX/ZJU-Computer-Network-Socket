@@ -17,6 +17,8 @@
 #include <queue>
 #include <mutex>
 #include <condition_variable>
+#include <sys/ipc.h>
+#include <sys/msg.h>
 
 using namespace std;
 
