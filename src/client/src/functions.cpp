@@ -16,12 +16,14 @@ using namespace std;
  */
 
 int packetID = 0;
+// for UDP
+struct sockaddr_in addr;
 
 void connectToServer(int protocol)
 {
     int sockfd = init(protocol);
 
-    setOptions(sockfd);   
+    setOptions(sockfd);
 
     string serverIp;
     int port;
@@ -30,7 +32,7 @@ void connectToServer(int protocol)
     cout << "Please enter the server port: ";
     cin >> port;
 
-    startConnect(sockfd, (char *) serverIp.c_str(), port);
+    startConnect(sockfd, (char *)serverIp.c_str(), port);
 
     int serverID = nextID++;
     serverConnection conn;
@@ -42,6 +44,42 @@ void connectToServer(int protocol)
     serverConnections[serverID].recvThread = startSocketThread(serverID);
 
     cout << "Connected to server successfully. Server ID: " << serverID << endl;
+}
+
+void connectToServer_UDP(int protocol)
+{
+    int sockfd = init(protocol);
+
+    setOptions(sockfd);
+
+    string serverIp;
+    int serverPort, localPort;
+
+    cout << "Please enter the server IP address: ";
+    cin >> serverIp;
+    cout << "Please enter the server port: ";
+    cin >> serverPort;
+    cout << "Please enter the local port: ";
+    cin >> localPort;
+
+    bindAddress(sockfd, "0.0.0.0", localPort);
+
+    int serverID = nextID++;
+    serverConnection conn;
+    conn.sockfd = sockfd;
+    conn.connected = false;
+    serverConnections[serverID] = move(conn);
+
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = inet_addr(serverIp.c_str());
+    addr.sin_port = htons(serverPort);
+
+    // 创建子进程
+    serverConnections[serverID].recvThread = startSocketThread_UDP(serverID);
+
+    cout << "Connected to server successfully. Server ID: " << serverID << endl;
+    
 }
 
 void disconnectFromServer()
@@ -66,7 +104,6 @@ void disconnectFromServer()
     cout << "Connections number: " << serverConnections.size() << endl;
     cout << "Disconnected from server ID " << serverID << endl;
 }
-
 
 void exit()
 {
@@ -114,7 +151,6 @@ void getCityName()
     }
 
     // handle_received_message();
-
 }
 
 void getWeatherInfo()
@@ -132,14 +168,13 @@ void getWeatherInfo()
     cout << "Please enter the area code: ";
     cin >> areaCode;
     cout << "Please enter the date (YYYY-MM-DD): ";
-    cin >> date;    
+    cin >> date;
 
     // 组装请求数据包
     packetID = (packetID + 1) % 256;
     Packet p("2682", PacketType::REQUEST, PacketID(packetID), ContentType::RequestWeatherInfo);
     p.addArg(areaCode);
     p.addArg(date);
-
 
     string msg = p.encode();
 
