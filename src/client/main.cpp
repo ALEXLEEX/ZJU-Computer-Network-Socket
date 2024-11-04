@@ -12,6 +12,10 @@
 
 using namespace std;
 
+// global variables
+int nextID=1;
+map<int, serverConnection> serverConnections;
+
 /*
  * 客户端主函数
 */
@@ -25,34 +29,23 @@ int main()
         cout << "Invalid protocol type." << endl;
         return 0;
     }
-
     
-    // 初始化socket    
-    Client client;    
     while (1) 
     {               
+        showConnectedServers();
         int choice, status, serverID;
-        status = client.connectionStatus();
+        status = serverConnections.size() > 0 ? CONNECTED : DISCONNECTED;
         mainInterface(status);
         cin >> choice;
         switch (choice)
         {
             case 1:
                 // 连接
-                char serverip[20];
-                int port;
-                cout << "Please enter the server IP address: ";
-                cin >> serverip;
-                cout << "Please enter the server port: ";
-                cin >> port;
-                client.ConnectToServer(protocol, serverip, port);
+                connectToServer(protocol);
                 break;
             case 2:
                 // 断开连接
-                int serverID;
-                cout << "Please enter the server ID: ";
-                cin >> serverID;
-                client.closeConnection(serverID);
+                disconnectFromServer();
                 break;
             case 3:
                 // 获取城市名字
@@ -64,13 +57,10 @@ int main()
                 // 活动连接列表
                 break;                
             case 6:
-                // 发消息                
-                cout << "Please enter the server ID: ";
-                cin >> serverID;
-                client.sendTCPMessage(serverID, "list");                            
-                break;
+                // 发消息                                
             case 7:
                 // 退出
+                exit();
                 return 0;
             default:
                 cout << "Invalid choice." << endl;

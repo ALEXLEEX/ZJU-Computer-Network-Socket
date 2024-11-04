@@ -21,7 +21,7 @@ void protocolInterface()
 void mainInterface(int status)
 {
     // 格式化输出菜单
-    cout << "Welcome to the Client Interface" << endl;
+    cout << "\n======== MENU ========" << endl;
     if (status == DISCONNECTED) {
         cout << "1. Connect to Server" << endl;
         cout << "2. Exit" << endl;
@@ -34,5 +34,20 @@ void mainInterface(int status)
         cout << "5. Active Connection List" << endl;
         cout << "6. Send Message" << endl;
         cout << "7. Exit" << endl;
+    }
+    cout << "======================" << endl;
+}
+
+void showConnectedServers()
+{
+    cout << "======================" << endl;
+    if (serverConnections.empty()) {
+        cout << "No server connected." << endl;
+        return;
+    }
+    cout << "Connected servers: " << endl;
+    for (auto it = serverConnections.begin(); it != serverConnections.end(); it++)
+    {
+        cout << "Server ID: " << it->first << endl;
     }
 }
