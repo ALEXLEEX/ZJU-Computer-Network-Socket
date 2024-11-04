@@ -9,6 +9,8 @@
 #include "../include/server_base.h"
 #include "../include/client_info.h"
 #include "../include/utils.h"
+#include "../../packet/include/packet.h"
+#include "../../packet/include/utils.h"
 #include <iostream>
 #include <string>
 #include <sys/socket.h>
@@ -23,7 +25,7 @@
 
 Server_Base::Server_Base(std::string ip, int port, int queueSize, int bufferSize, double timeout):
     serverSocket(-1), serverIp(ip), serverPort(port), serverStatus(ServerStatus::UNINIT),
-    queueSize(queueSize), bufferSize(bufferSize), timeout(timeout)
+    queueSize(queueSize), bufferSize(bufferSize), timeout(timeout), packetID(PacketID(0))
 {
     clientQueue = std::vector<ClientInfo>(queueSize, ClientInfo());
     activeClients = ActiveClients();
@@ -137,10 +139,17 @@ void Server_Base::startSocketThread()
     }
 }
 
+void Server_Base::sendAssignment(ClientInfo& client, ContentType type, std::string message)
+{
+    Packet packet(SERVER_INFO, PacketType::ASSIGNMENT, packetID, type);
+    packet.addArg(message);
+    send2Client(client, packet.encode());
+}
+
 void Server_Base::closeClient(ClientInfo& client)
 {
     if (client.getStatus()) {
-        sendResponse(client, "Disconnected from server (" + serverIp + ":" + std::to_string(serverPort) + ").");
+        send2Client(client, "Disconnected from server (" + serverIp + ":" + std::to_string(serverPort) + ").");
         close(client.getSocket());
         client.setStatus(0); // Shut down the sub thread.
         activeClients.erase(client.getID());

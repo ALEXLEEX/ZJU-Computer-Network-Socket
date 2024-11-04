@@ -1,29 +1,29 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(server VERSION 2.0 LANGUAGES CXX DESCRIPTION "Server for ZJU-Computer-Network-Socket")
+project(server VERSION 2.0 DESCRIPTION "Server for ZJU-Computer-Network-Socket")
 
 set(CMAKE_CXX_STANDARD 11)
 
-# Source files.
-file(GLOB SOURCES
-    src/*.cpp
-    ../packet/src/*.cpp
-)
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 
+# Add dependencies.
+find_package(OpenSSL REQUIRED)
+
+# Include directories.
 include_directories(
     include/
     ../packet/include/
 )
 
-# Add dependencies.
-find_package(OpenSSL REQUIRED)
+# Source files.
+file(GLOB SOURCES
+    "src/*.cpp"
+    "../packet/src/*.cpp"
+    main.cpp
+)
 
 # Add executable target.
-add_executable(SERVER main.cpp)
-
-add_library(server ${SOURCES})
-
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
+add_executable(server ${SOURCES})
 
 # Link dependencies.
-target_link_libraries(SERVER OpenSSL::SSL OpenSSL::Crypto server)
+target_link_libraries(server OpenSSL::SSL OpenSSL::Crypto)

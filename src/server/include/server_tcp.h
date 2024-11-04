@@ -62,8 +62,8 @@ private:
     /* Run the client thread by this worker. */
     void process(int clientSocket);
 
-    /* Send response to client. */
-    virtual void sendResponse(ClientInfo client, std::string message);
+    /* Send packet to client. */
+    virtual void send2Client(ClientInfo client, std::string message);
 
     /* Save client connection info. */
     ClientInfo& saveConnectInfo(int clientSocket, std::thread::id thread);

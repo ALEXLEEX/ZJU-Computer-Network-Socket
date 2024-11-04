@@ -76,6 +76,12 @@ public:
     PacketID getID() const;
 
     /**
+     * #@brief Set packet content.
+     * @param content Packet content.
+     */
+    void setContent(ContentType content);
+
+    /**
      * @brief Get packet content.
      * @return Packet content.
      */

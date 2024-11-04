@@ -44,6 +44,10 @@ enum class ServerMsgType {
     GOODBYE // Goodbye message.
 };
 
+/* Client && Server info. */
+#define CLIENT_INFO "2682"
+#define SERVER_INFO "3373"
+
 /* Server queue size. */
 #define SERVER_QUEUE_SIZE 256 // Maximum number of waiting clients in server queue.
 

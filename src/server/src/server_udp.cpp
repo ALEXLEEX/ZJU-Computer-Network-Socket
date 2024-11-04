@@ -56,7 +56,7 @@ void Server_UDP::worker()
     }
 }
 
-void Server_UDP::sendResponse(ClientInfo client, std::string message)
+void Server_UDP::send2Client(ClientInfo client, std::string message)
 {
     message = "\033[32m[Server] " + message + "\033[0m";
     sendto(client.getSocket(), message.c_str(), message.size(), 0, (struct sockaddr *)&client.getAddr(), sizeof(client.getAddr()));
