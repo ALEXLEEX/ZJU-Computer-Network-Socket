@@ -59,6 +59,17 @@ extern queue<string> message_queue;
         if (rc < 0) exitWithError("connect failed");
     }
     
+    void bindAddress(int s, const char ip[], int port)
+    {
+        struct sockaddr_in channel;
+        memset(&channel, 0, sizeof(channel));
+        channel.sin_family = AF_INET;
+        channel.sin_addr.s_addr = inet_addr(ip);
+        channel.sin_port = htons(port);
+        int rc = bind(s, (struct sockaddr *) &channel, sizeof(channel));
+        if (rc < 0) exitWithError("bind failed");
+    }
+
     void worker(int serverID)
     {
         char buffer[1024];
@@ -75,8 +86,11 @@ extern queue<string> message_queue;
                 string msg(buffer, rc);
                 cout << "Received message from server ID " << serverID << ": " << msg << endl;
 
-                lock_guard<mutex> lock(mtx);
-                message_queue.push(msg);
+                {
+                    lock_guard<mutex> lock(mtx);
+                    message_queue.push(msg);
+                }
+                // 通知主线程
                 cv.notify_one();
             } else {
                 cout << "Server ID " << serverID << " disconnected." << endl;
@@ -87,18 +101,67 @@ extern queue<string> message_queue;
         cout << "Thread for server ID " << serverID << " exited." << endl;
     }
 
-    void handle_received_message()
+    void woker_UDP(int serverID)
     {
-        if (message_queue.empty()) {
-            cout << "No message received." << endl;
-            return;
-        }
-        while (!message_queue.empty()) {
-            lock_guard<mutex> lock(mtx);
-            string msg = message_queue.front();
-            message_queue.pop();
-            cout << "Received message: " << msg << endl;
-        }
+        char buffer[1024];
+        serverConnection& conn = serverConnections[serverID];
+        ssize_t rc;
+        struct sockaddr_in addr;
+        socklen_t addr_len = sizeof(addr);
+
+        while (1) {
+            memset(buffer, 0, sizeof(buffer));
+            rc = recvfrom(conn.sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *) &addr, &addr_len);
+
+            if (rc <= 0) {
+                perror("recvfrom failed");
+                close(conn.sockfd);
+                break;
+            }
+
+            // 判断 addr 的地址是否来自服务器, 不是则忽略
+            bool found = false;
+            // ... 
+            
+
+            // if (!found) {
+            //     cout << "Received message from unknown address, ignored." << endl;
+            //     continue;
+            // }
+
+            cout << "Received message from server ID " << serverID << ": " << buffer << endl;
+
+            if (strcmp(buffer, "BYE") == 0) {
+                cout << "Server ID " << serverID << " disconnected." << endl;
+                conn.connected = false;
+                break;
+            }
+
+            else if (strcmp(buffer, "ACK") == 0) {
+                cout << "Received ACK from server ID " << serverID << endl;
+                conn.connected = true;
+            }
+
+            else if (conn.connected)
+            {
+                lock_guard<mutex> lock(mtx);
+                message_queue.push(buffer);
+            }
+        }        
+    }
+
+    void handle_received_message(int choice)
+    {
+        // 从队列中取出对应的消息
+        unique_lock<mutex> lock(mtx);
+        // 等待消息队列出现消息
+        cv.wait(lock, [] { return !message_queue.empty(); });
+
+        cout << "Choice: " << choice << endl;
+        string msg = message_queue.front();
+        message_queue.pop();
+        cout << "Received message: " << msg << endl;
+    
     }
     /**
      * 创建socket线程
@@ -110,10 +173,24 @@ extern queue<string> message_queue;
         return NULL;
     }
 
+    void *Thread_UDP(void *arg)
+    {
+        int serverID = (long) arg & 0xFFFFFFFF;
+        woker_UDP(serverID);
+        return NULL;
+    }
+
     pthread_t startSocketThread(int serverID)
     {
         pthread_t t_id;
         pthread_create(&t_id, NULL, Thread, (void *) (long) serverID);
+        return t_id;
+    }
+
+    pthread_t startSocketThread_UDP(int serverID)
+    {
+        pthread_t t_id;
+        pthread_create(&t_id, NULL, Thread_UDP, (void *) (long) serverID);
         return t_id;
     }
 

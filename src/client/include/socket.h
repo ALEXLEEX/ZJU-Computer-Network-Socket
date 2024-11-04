@@ -19,8 +19,14 @@
     
     void worker(int s);
 
+    void woker_UDP(int s);
+
     pthread_t startSocketThread(int s);
 
-    void handle_received_message();
+    pthread_t startSocketThread_UDP(int s);
+
+    void handle_received_message(int choice);
+
+    void bindAddress(int s, const char ip[], int port);
 
 #endif

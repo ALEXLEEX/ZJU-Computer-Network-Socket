@@ -60,12 +60,16 @@ int main()
                 break;
             case 4:
                 // 获取气象信息
+                getWeatherInfo();
                 break;
             case 5:
                 // 活动连接列表
+                getClientList();
                 break;                
             case 6:
-                // 发消息                                
+                // 发消息     
+                sendMessage();
+                break;                           
             case 7:
                 // 退出
                 exit();
@@ -74,6 +78,7 @@ int main()
                 cout << "Invalid choice." << endl;
                 break;
         }
+        handle_received_message(choice);
     }
 }
 
