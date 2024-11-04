@@ -1,6 +1,7 @@
 #include "config.h"
 #include "socket.h"
 #include "functions.h"
+#include "packet.h"
 
 using namespace std;
 /**
@@ -13,6 +14,8 @@ using namespace std;
     f)	发消息：请求服务端把消息转发给对应编号的客户端，该客户端收到后显示在屏幕上
     g)	退出：断开所有服务端的连接并退出客户端程序。
  */
+
+int packetID = 1;
 
 void connectToServer(int protocol)
 {
@@ -77,4 +80,38 @@ void exit()
     serverConnections.clear();
     cout << "All connections closed." << endl;
     cout << "Exit successfully." << endl;
+}
+
+void getCityName()
+{
+    int serverID;
+    cout << "Please enter the server ID you want to get city name: ";
+    cin >> serverID;
+    if (serverConnections.find(serverID) == serverConnections.end() || !serverConnections[serverID].connected)
+    {
+        cout << "Server ID not found or server is not connected." << endl;
+        return;
+    }
+
+    string areaCode;
+    cout << "Please enter the area code: ";
+    cin >> areaCode;
+
+    // 组装请求数据包
+    Packet p("2682", PacketType::REQUEST, PacketID(packetID++), ContentType::RequestCityName);
+    p.addArg(areaCode);
+
+    string msg = p.encode();
+
+    if (send(serverConnections[serverID].sockfd, msg.c_str(), msg.length(), 0))
+    {
+        cout << "Request sent successfully." << endl;
+    }
+    else
+    {
+        cout << "Failed to send request." << endl;
+    }
+
+    handle_received_message();
+
 }

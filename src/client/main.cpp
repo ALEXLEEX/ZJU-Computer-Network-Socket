@@ -16,6 +16,13 @@ using namespace std;
 int nextID=1;
 map<int, serverConnection> serverConnections;
 
+// 用于线程同步的条件变量和互斥锁
+std::mutex mtx;
+std::condition_variable cv;
+
+// 消息队列y用于线程间通信
+std::queue<std::string> message_queue;          
+
 /*
  * 客户端主函数
 */
@@ -49,6 +56,7 @@ int main()
                 break;
             case 3:
                 // 获取城市名字
+                getCityName();
                 break;
             case 4:
                 // 获取气象信息

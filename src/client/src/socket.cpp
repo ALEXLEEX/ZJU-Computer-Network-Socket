@@ -8,8 +8,12 @@
 #include "socket.h"
 using namespace std;
 
+// 线程共享全局变量
 extern int nextID;
 extern map<int, serverConnection> serverConnections;
+extern mutex mtx;
+extern condition_variable cv;
+extern queue<string> message_queue;
 
 /**
  * 对 Socket API 的第一层封装
@@ -67,31 +71,35 @@ extern map<int, serverConnection> serverConnections;
             memset(buffer, 0, sizeof(buffer));
             rc = recv(conn.sockfd, buffer, sizeof(buffer), 0);
 
-            if (rc <= 0) {
-                if (conn.connected) {
-                    perror("recv failed");
-                    cout << "Server ID " << serverID << " disconnected." << endl;
-                    conn.connected = false;
-                    break;
-                }
-                else {
-                    cout << "Server ID " << serverID << " disconnected." << endl;
-                }
-            }
-            else {                
-                cout << "Server ID " << serverID << " received: " << buffer << endl;
-                if (strcmp(buffer, "BYE") == 0) {
-                    conn.connected = false;
-                    break;
-                }
-                conn.cv.notify_one();
-            }        
-        }
+            if (rc > 0) {
+                string msg(buffer, rc);
+                cout << "Received message from server ID " << serverID << ": " << msg << endl;
 
+                lock_guard<mutex> lock(mtx);
+                message_queue.push(msg);
+                cv.notify_one();
+            } else {
+                cout << "Server ID " << serverID << " disconnected." << endl;
+                conn.connected = false;
+            }
+        }
         
         cout << "Thread for server ID " << serverID << " exited." << endl;
     }
 
+    void handle_received_message()
+    {
+        if (message_queue.empty()) {
+            cout << "No message received." << endl;
+            return;
+        }
+        while (!message_queue.empty()) {
+            lock_guard<mutex> lock(mtx);
+            string msg = message_queue.front();
+            message_queue.pop();
+            cout << "Received message: " << msg << endl;
+        }
+    }
     /**
      * 创建socket线程
      */
