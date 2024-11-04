@@ -10,9 +10,13 @@
 #include "../include/server_tcp.h"
 #include "../include/client_info.h"
 #include "../include/utils.h"
+#include "../include/config.h"
+#include "../../packet/include/packet.h"
+#include "../../packet/include/utils.h"
 #include <vector>
 #include <thread>
 #include <system_error>
+#include <algorithm>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -77,7 +81,7 @@ void Server_TCP::process(int clientSocket)
 {
     // Save client connection information.
     ClientInfo& client = saveConnectInfo(clientSocket, std::this_thread::get_id());
-    sendResponse(client, "Connected to server(" + serverIp + ":" + std::to_string(serverPort) + ").");
+    send2Client(client, "Connected to server(" + serverIp + ":" + std::to_string(serverPort) + ").");
     printMessage(ServerMsgType::INFO, "New client (socketFd = " + std::to_string(clientSocket) + ") from " + client.getIP() + ":" + std::to_string(client.getPort()) + " connected, assigned id = " + std::to_string(client.getID()) + ".");
 
     // Receive and handle client requests.
@@ -93,9 +97,8 @@ void Server_TCP::process(int clientSocket)
     closeClient(client);
 }
 
-void Server_TCP::sendResponse(ClientInfo client, std::string message)
+void Server_TCP::send2Client(ClientInfo client, std::string message)
 {
-    message = "\033[32m[Server] " + message + "\033[0m";
     send(client.getSocket(), message.c_str(), message.size(), 0);
 }
 
@@ -133,13 +136,76 @@ ClientInfo& Server_TCP::saveConnectInfo(int clientSocket, std::thread::id thread
 
 void Server_TCP::handleRequest(ClientInfo& client, std::string message)
 {
-    /**
-     * @todo Handle client request.
-     * @brief 1. Send response to client of receiving message.
-     *        2. Decode packet and print to server console.
-     *        3. Parse request.
-     *        4. Handle request and response.
-     *        5. set return code: if the client quits, set return code to -1.
-     * @note Maybe can be a base class method.
-     */
+    Packet request(CLIENT_INFO);
+    if (request.decode(message)) {
+        std::vector<std::string> args = request.getArgs();
+        Packet response(SERVER_INFO, PacketType::RESPONSE, packetID++);
+        switch (request.getContent()) {
+            case ContentType::RequestCityName: {
+                response.setContent(ContentType::ResponseCityName);
+                int cityID = std::stoi(args[0]);
+                if (cityID <= CityNums) {
+                    response.addArg("1"); // Arg 1: success.
+                    response.addArg(CityNames.at(cityID)); // Arg 2: city name.
+                } else {
+                    response.addArg("0"); // Arg 1: failure.
+                    response.addArg("No matching city for ID " + args[0] + "."); // Arg 2: error message.
+                }
+                break;
+            }
+            case ContentType::RequestWeatherInfo: {
+                response.setContent(ContentType::ResponseWeatherInfo);
+                int cityID = std::stoi(args[0]);
+                if (cityID <= WeatherInfo.size()) {
+                    std::string date = args[1] + "-" + args[2] + "-" + args[3];
+                    if (WeatherInfo.at(cityID).count(date)) {
+                        response.addArg("1"); // Arg 1: success.
+                        response.addArg(CityNames.at(cityID)); // Arg 2: city name.
+                        response.addArg(WeatherInfo.at(cityID).at(date)); // Arg 3: weather information.
+                    } else {
+                        response.addArg("0"); // Arg 1: failure.
+                        response.addArg("No weather information for date " + date + "."); // Arg 2: error message.
+                    }
+                } else {
+                    response.addArg("0"); // Arg 1: failure.
+                    response.addArg("No matching city for ID " + args[0] + "."); // Arg 2: error message.
+                }
+                break;
+            }
+            case ContentType::RequestClientList: {
+                response.setContent(ContentType::ResponseClientList);
+                response.addArg(std::to_string(activeClients.size())); // Arg 1: Active client number.
+                std::vector<ClientID> clientIDs(activeClients.begin(), activeClients.end());
+                std::sort(clientIDs.begin(), clientIDs.end());
+                for (ClientID id: clientIDs) {
+                    response.addArg(std::to_string(id) + "," + clientQueue.at(id).getIP() + ":" + std::to_string(clientQueue.at(id).getPort())); // Arg 2: client info.
+                }
+                break;
+            }
+            case ContentType::RequestSendMessage: {
+                response.setContent(ContentType::ResponseSendMessage);
+                ClientID targetID = std::stoi(args[0]);
+                if (targetID <= queueSize) {
+                    ClientInfo& target = clientQueue.at(targetID);
+                    if (target.getStatus()) {
+                        std::string message = "Message from client " + std::to_string(client.getID()) + ": " + args[1];
+                        sendAssignment(target, ContentType::AssignmentSendMessage, message);
+                        response.addArg("1"); // Arg 1: success.
+                    } else {
+                        response.addArg("0"); // Arg 1: failure.
+                        response.addArg("Client " + std::to_string(targetID) + " not exists."); // Arg 2: error message.
+                    }
+                } else {
+                    response.addArg("0"); // Arg 1: failure.
+                    response.addArg("Invalid client ID " + args[0] + "."); // Arg 2: error message.
+                }
+                break;
+            }
+            default:
+                response.setContent(ContentType::ResponseUnknown);
+                response.addArg("Unknown request type.");
+        }
+        send2Client(client, response.encode());
+    }
+    return ;
 }

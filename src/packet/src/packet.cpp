@@ -99,6 +99,11 @@ PacketID Packet::getID() const
     return id;
 }
 
+void Packet::setContent(ContentType content)
+{
+    this->content = content;
+}
+
 ContentType Packet::getContent() const
 {
     return content;

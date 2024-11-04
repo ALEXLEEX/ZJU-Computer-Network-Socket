@@ -51,8 +51,8 @@ private:
     /* Run the server by this worker. */
     virtual void worker();
 
-    /* Send response to client. */
-    virtual void sendResponse(ClientInfo client, std::string message);
+    /* Send packet to client. */
+    virtual void send2Client(ClientInfo client, std::string message);
 
     /* Save client connection info. */
     void saveConnectInfo(ClientAddr clientAddr, int clientStatus);

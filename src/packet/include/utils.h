@@ -35,6 +35,7 @@ enum class ContentType {
     ResponseSendMessage,     // Response message.
     ResponseMakeConnection,  // Response make connection.
     ResponseCloseConnection, // Response close connection.
+    ResponseUnknown,         // Response unknown request.
 
     AssignmentSendMessage,   // Assignment send message.
     AssignmentClientLogin,   // Assignment client login.

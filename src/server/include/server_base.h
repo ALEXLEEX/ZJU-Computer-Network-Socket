@@ -12,6 +12,7 @@
 
 #include "utils.h"
 #include "client_info.h"
+#include "../../packet/include/utils.h"
 #include <string>
 #include <vector>
 
@@ -71,6 +72,7 @@ protected:
     double timeout; // Server waiting timeout.
     std::vector<ClientInfo> clientQueue; // Client queue.
     ActiveClients activeClients; // Active clients.
+    PacketID packetID; // Packet ID.
 
     /* Print messages with different types. */
     void printMessage(ServerMsgType msgType, std::string msg);
@@ -90,8 +92,11 @@ protected:
     /* Running the server by this worker. */
     virtual void worker() = 0;
 
-    /* Send response to client. */
-    virtual void sendResponse(ClientInfo client, std::string message) = 0;
+    /* Send assignment message to client. */
+    void sendAssignment(ClientInfo& client, ContentType type, std::string message);
+
+    /* Send packet to client. */
+    virtual void send2Client(ClientInfo client, std::string message) = 0;
 
     /* Close the connection from the client. */
     void closeClient(ClientInfo& client);
