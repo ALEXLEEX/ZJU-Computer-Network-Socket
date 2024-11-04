@@ -15,7 +15,7 @@ using namespace std;
     g)	退出：断开所有服务端的连接并退出客户端程序。
  */
 
-int packetID = 1;
+int packetID = 0;
 
 void connectToServer(int protocol)
 {
@@ -98,7 +98,8 @@ void getCityName()
     cin >> areaCode;
 
     // 组装请求数据包
-    Packet p("2682", PacketType::REQUEST, PacketID(packetID++), ContentType::RequestCityName);
+    packetID = (packetID + 1) % 256;
+    Packet p("2682", PacketType::REQUEST, PacketID(packetID), ContentType::RequestCityName);
     p.addArg(areaCode);
 
     string msg = p.encode();
@@ -112,6 +113,110 @@ void getCityName()
         cout << "Failed to send request." << endl;
     }
 
-    handle_received_message();
+    // handle_received_message();
 
+}
+
+void getWeatherInfo()
+{
+    int serverID;
+    cout << "Please enter the server ID you want to get weather info: ";
+    cin >> serverID;
+    if (serverConnections.find(serverID) == serverConnections.end() || !serverConnections[serverID].connected)
+    {
+        cout << "Server ID not found or server is not connected." << endl;
+        return;
+    }
+
+    string date, areaCode;
+    cout << "Please enter the area code: ";
+    cin >> areaCode;
+    cout << "Please enter the date (YYYY-MM-DD): ";
+    cin >> date;    
+
+    // 组装请求数据包
+    packetID = (packetID + 1) % 256;
+    Packet p("2682", PacketType::REQUEST, PacketID(packetID), ContentType::RequestWeatherInfo);
+    p.addArg(areaCode);
+    p.addArg(date);
+
+
+    string msg = p.encode();
+
+    if (send(serverConnections[serverID].sockfd, msg.c_str(), msg.length(), 0))
+    {
+        cout << "Request sent successfully." << endl;
+    }
+    else
+    {
+        cout << "Failed to send request." << endl;
+    }
+
+    // handle_received_message();
+}
+
+void getClientList()
+{
+    int serverID;
+    cout << "Please enter the server ID you want to get client list: ";
+    cin >> serverID;
+    if (serverConnections.find(serverID) == serverConnections.end() || !serverConnections[serverID].connected)
+    {
+        cout << "Server ID not found or server is not connected." << endl;
+        return;
+    }
+
+    // 组装请求数据包
+    packetID = (packetID + 1) % 256;
+    Packet p("2682", PacketType::REQUEST, PacketID(packetID), ContentType::RequestClientList);
+
+    string msg = p.encode();
+
+    if (send(serverConnections[serverID].sockfd, msg.c_str(), msg.length(), 0))
+    {
+        cout << "Request sent successfully." << endl;
+    }
+    else
+    {
+        cout << "Failed to send request." << endl;
+    }
+
+    // handle_received_message();
+}
+
+void sendMessage()
+{
+    int serverID;
+    cout << "Please enter the server ID you want to send message: ";
+    cin >> serverID;
+    if (serverConnections.find(serverID) == serverConnections.end() || !serverConnections[serverID].connected)
+    {
+        cout << "Server ID not found or server is not connected." << endl;
+        return;
+    }
+
+    string receiverID, message;
+    cout << "Please enter the receiver ID: ";
+    cin >> receiverID;
+    cout << "Please enter the message: ";
+    cin >> message;
+
+    // 组装请求数据包
+    packetID = (packetID + 1) % 256;
+    Packet p("2682", PacketType::REQUEST, PacketID(packetID), ContentType::RequestSendMessage);
+    p.addArg(receiverID);
+    p.addArg(message);
+
+    string msg = p.encode();
+
+    if (send(serverConnections[serverID].sockfd, msg.c_str(), msg.length(), 0))
+    {
+        cout << "Request sent successfully." << endl;
+    }
+    else
+    {
+        cout << "Failed to send request." << endl;
+    }
+
+    // handle_received_message();
 }

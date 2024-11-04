@@ -75,8 +75,11 @@ extern queue<string> message_queue;
                 string msg(buffer, rc);
                 cout << "Received message from server ID " << serverID << ": " << msg << endl;
 
-                lock_guard<mutex> lock(mtx);
-                message_queue.push(msg);
+                {
+                    lock_guard<mutex> lock(mtx);
+                    message_queue.push(msg);
+                }
+                // 通知主线程
                 cv.notify_one();
             } else {
                 cout << "Server ID " << serverID << " disconnected." << endl;
@@ -87,18 +90,18 @@ extern queue<string> message_queue;
         cout << "Thread for server ID " << serverID << " exited." << endl;
     }
 
-    void handle_received_message()
+    void handle_received_message(int choice)
     {
-        if (message_queue.empty()) {
-            cout << "No message received." << endl;
-            return;
-        }
-        while (!message_queue.empty()) {
-            lock_guard<mutex> lock(mtx);
-            string msg = message_queue.front();
-            message_queue.pop();
-            cout << "Received message: " << msg << endl;
-        }
+        // 从队列中取出对应的消息
+        unique_lock<mutex> lock(mtx);
+        // 等待消息队列出现消息
+        cv.wait(lock, [] { return !message_queue.empty(); });
+
+        cout << "Choice: " << choice << endl;
+        string msg = message_queue.front();
+        message_queue.pop();
+        cout << "Received message: " << msg << endl;
+    
     }
     /**
      * 创建socket线程

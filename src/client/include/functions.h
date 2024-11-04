@@ -13,6 +13,9 @@ using namespace std;
 void connectToServer(int protocol);
 void disconnectFromServer();
 void getCityName();
+void getWeatherInfo();
+void getClientList();
+void sendMessage();
 
 void exit();
 

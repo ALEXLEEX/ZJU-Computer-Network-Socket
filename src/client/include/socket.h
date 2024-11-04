@@ -21,6 +21,6 @@
 
     pthread_t startSocketThread(int s);
 
-    void handle_received_message();
+    void handle_received_message(int choice);
 
 #endif
