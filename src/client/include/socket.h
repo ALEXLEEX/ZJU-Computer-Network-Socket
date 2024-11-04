@@ -19,7 +19,7 @@
     
     void worker(int s);
 
-    void startSocketThread(int s);
+    pthread_t startSocketThread(int s);
 
     void sendMessage(int s, char *msg);
 

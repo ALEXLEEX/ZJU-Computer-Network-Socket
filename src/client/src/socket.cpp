@@ -8,6 +8,9 @@
 #include "socket.h"
 using namespace std;
 
+extern int nextID;
+extern map<int, serverConnection> serverConnections;
+
 /**
  * 对 Socket API 的第一层封装
  */
@@ -16,7 +19,7 @@ using namespace std;
     {
         perror(msg);
         exit(EXIT_FAILURE);
-    }
+    }     
 
     int init(int type)
     {
@@ -36,7 +39,7 @@ using namespace std;
         setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 
         struct timeval timeout;
-        timeout.tv_sec = 20;
+        timeout.tv_sec = 1;
         timeout.tv_usec = 0;
         setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
     }
@@ -52,44 +55,58 @@ using namespace std;
         if (rc < 0) exitWithError("connect failed");
     }
     
-    void worker(int s)
+    void worker(int serverID)
     {
         char buffer[1024];
+        serverConnection& conn = serverConnections[serverID];
         ssize_t rc;
 
-        while (1) {
+        while (conn.connected) {
+
+            cout << "receiver State " <<conn.connected << endl;
             memset(buffer, 0, sizeof(buffer));
-            rc = recv(s, buffer, sizeof(buffer), 0);
+            rc = recv(conn.sockfd, buffer, sizeof(buffer), 0);
 
             if (rc <= 0) {
-                perror("recv failed");
-                close(s);
-                break;
+                if (conn.connected) {
+                    perror("recv failed");
+                    cout << "Server ID " << serverID << " disconnected." << endl;
+                    conn.connected = false;
+                    break;
+                }
+                else {
+                    cout << "Server ID " << serverID << " disconnected." << endl;
+                }
             }
-
-            else cout << "Rx: " << buffer << endl;
-
-            if (strcmp(buffer, "BYE") == 0) {
-                close(s);
-                break;
-            }
+            else {                
+                cout << "Server ID " << serverID << " received: " << buffer << endl;
+                if (strcmp(buffer, "BYE") == 0) {
+                    conn.connected = false;
+                    break;
+                }
+                conn.cv.notify_one();
+            }        
         }
+
+        
+        cout << "Thread for server ID " << serverID << " exited." << endl;
     }
 
     /**
-     * 创建socket主线程
+     * 创建socket线程
      */
     void *Thread(void *arg)
     {
-        int s = (long) arg & 0xFFFFFFFF;
-        worker(s);
+        int serverID = (long) arg & 0xFFFFFFFF;
+        worker(serverID);
         return NULL;
     }
 
-    void startSocketThread(int s)
+    pthread_t startSocketThread(int serverID)
     {
         pthread_t t_id;
-        pthread_create(&t_id, NULL, Thread, (void *) (long) s);
+        pthread_create(&t_id, NULL, Thread, (void *) (long) serverID);
+        return t_id;
     }
 
 #endif

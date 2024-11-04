@@ -1,5 +1,7 @@
-#include "functions.h"
+#include "config.h"
 #include "socket.h"
+#include "functions.h"
+
 using namespace std;
 /**
  * 调用我们封装的 Socket API 实现客户端的 7 种功能：
@@ -12,54 +14,67 @@ using namespace std;
     g)	退出：断开所有服务端的连接并退出客户端程序。
  */
 
-int Client::ConnectToServer(int protocol, char *serverip, int port)
+void connectToServer(int protocol)
 {
-    int s = init(protocol);
-    cout << "Connecting to server..." << endl;
-    
-    setOptions(s);
+    int sockfd = init(protocol);
 
-    startConnect(s, serverip, port);
-    int serverID = serverIDCounter++;
-    serverConnections[serverID] = s;    
-    cout << "Connected to server " << serverip << " on port " << port << " with server ID " << serverID << endl;
+    setOptions(sockfd);   
 
-    startSocketThread(s);    
+    string serverIp;
+    int port;
+    cout << "Please enter the server IP address: ";
+    cin >> serverIp;
+    cout << "Please enter the server port: ";
+    cin >> port;
 
-    return serverID;
+    startConnect(sockfd, (char *) serverIp.c_str(), port);
+
+    int serverID = nextID++;
+    serverConnection conn;
+    conn.sockfd = sockfd;
+    conn.connected = true;
+    serverConnections[serverID] = move(conn);
+
+    // 创建子进程
+    serverConnections[serverID].recvThread = startSocketThread(serverID);
+
+    cout << "Connected to server successfully. Server ID: " << serverID << endl;
 }
 
-void Client::closeConnection(int serverID)
+void disconnectFromServer()
 {
-    if (serverConnections.find(serverID) != serverConnections.end())
+    int serverID;
+    cout << "Please enter the server ID you want to disconnect: ";
+    cin >> serverID;
+    if (serverConnections.find(serverID) == serverConnections.end() || !serverConnections[serverID].connected)
     {
-        int s = serverConnections[serverID];
-        close(s);
-        serverConnections.erase(serverID);
-        cout << "Connection to server " << serverID << " closed." << endl;
+        cout << "Server ID not found or server is not connected." << endl;
+        return;
     }
-    else
-    {
-        cout << "Server ID " << serverID << " not found." << endl;
-    }
+
+    serverConnections[serverID].connected = false;
+
+    shutdown(serverConnections[serverID].sockfd, SHUT_RD);
+    close(serverConnections[serverID].sockfd);
+
+    pthread_join(serverConnections[serverID].recvThread, NULL);
+
+    serverConnections.erase(serverID);
+    cout << "Connections number: " << serverConnections.size() << endl;
+    cout << "Disconnected from server ID " << serverID << endl;
 }
 
-void Client::sendTCPMessage(int serverID, const string &msg)
-{
-    if (serverConnections.find(serverID) != serverConnections.end())
-    {
-        int s = serverConnections[serverID];
-        int rc = send(s, msg.c_str(), msg.length(), 0);
-        if (rc < 0) exitWithError("send failed");        
-    }
-    else
-    {
-        cout << "Server ID " << serverID << " not found." << endl;
-    }
-}
 
-int Client::connectionStatus()
+void exit()
 {
-    if (serverConnections.size() > 0) return CONNECTED;
-    else return DISCONNECTED;
+    for (auto it = serverConnections.begin(); it != serverConnections.end(); it++)
+    {
+        it->second.connected = false;
+        shutdown(it->second.sockfd, SHUT_RD);
+        close(it->second.sockfd);
+        pthread_join(it->second.recvThread, NULL);
+    }
+    serverConnections.clear();
+    cout << "All connections closed." << endl;
+    cout << "Exit successfully." << endl;
 }
