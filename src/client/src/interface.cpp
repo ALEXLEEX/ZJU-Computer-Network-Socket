@@ -13,6 +13,9 @@ using namespace std;
 
 extern std::mutex cout_mtx;
 
+/**
+ * 选择协议界面
+ */
 void protocolInterface()
 {
     cout << "Please select the protocol you want to use" << endl;
@@ -46,6 +49,9 @@ void mainInterface(int status)
     }    
 }
 
+/**
+ * 显示已连接的服务器
+ */
 void showConnectedServers()
 {
     cout << "\n============= SERVERS ===============" << endl;

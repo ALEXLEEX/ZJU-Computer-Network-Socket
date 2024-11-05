@@ -92,9 +92,9 @@ int main()
                 return -1;
         }    
         // 等待消息处理线程处理完消息        
-        unique_lock<mutex> lock(mtx);
+        std::unique_lock<std::mutex> lock(mtx);
         cv.wait(lock, [] { return messageFlag; });
-        messageFlag = false;        
+        messageFlag = false;
     }
 
     messageHandler.join();

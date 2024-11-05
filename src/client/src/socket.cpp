@@ -119,10 +119,14 @@ extern bool messageFlag;
         ssize_t rc;
         struct sockaddr_in addr;
         socklen_t addr_len = sizeof(addr);
-
+        
         while (1) {
+            // cout << "Debug: serverID = " << serverID << endl;
             memset(buffer, 0, sizeof(buffer));
             rc = recvfrom(conn.sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *) &addr, &addr_len);
+
+            // cout << "[Debug] addr: " << inet_ntoa(addr.sin_addr) << ":" << ntohs(addr.sin_port) << endl;
+            // cout << "[Debug] conn.addr: " << inet_ntoa(conn.addr.sin_addr) << ":" << ntohs(conn.addr.sin_port) << endl;
 
             if (rc <= 0) {
                 perror("recvfrom failed");
@@ -132,29 +136,53 @@ extern bool messageFlag;
 
             // 判断 addr 的地址是否来自服务器, 不是则忽略
             bool found = false;
-            // ... 
             
+            if (serverConnections.find(serverID) != serverConnections.end()) {
+                if (serverConnections[serverID].addr.sin_addr.s_addr == addr.sin_addr.s_addr && serverConnections[serverID].addr.sin_port == addr.sin_port) {
+                    found = true;
+                }
+            }
+            
+            if (!found) {
+                cout << "Received message from unknown address, ignored." << endl;
+                continue;
+            }
 
-            // if (!found) {
-            //     cout << "Received message from unknown address, ignored." << endl;
-            //     continue;
-            // }
+            Packet p("3373");
+            if (!p.decode(buffer)) {
+                cout << "\033[31m[ERROR] Failed to decode message.\033[0m" << endl;
+                continue;
+            }
 
             cout << "[Thread] Received message from server " << serverID << ": " << '{' << buffer << '}' << endl;
 
-            if (strcmp(buffer, "BYE") == 0) {
-                cout << "Server ID " << serverID << " disconnected." << endl;
-                conn.connected = false;
-                break;
+            if (p.getContent() == ContentType::ResponseMakeConnection) {
+                if (p.getArgs()[0] == "1") {
+                    cout << "Received ACK from server ID " << serverID << endl;
+                    conn.connected = true;
+                    messageFlag = true;
+                }
+                else {
+                    cout << "Failed to connect to server ID " << serverID << endl;
+                    conn.connected = false;
+                    messageFlag = true;
+                }     
             }
 
-            else if (strcmp(buffer, "ACK") == 0) {
-                cout << "Received ACK from server ID " << serverID << endl;
-                conn.connected = true;
+            else if (p.getContent() == ContentType::ResponseCloseConnection) {
+                if (p.getArgs()[0] == "1") {
+                    cout << "Received close connection ACK from server ID " << serverID << endl;
+                    conn.connected = false;
+                    messageFlag = true;
+                }
+                else {
+                    cout << "Failed to close connection to server ID " << serverID << endl;
+                    conn.connected = true;
+                    messageFlag = true;
+                }
             }
 
-            else if (conn.connected)
-            {
+            else if (conn.connected) {
                 lock_guard<mutex> lock(mtx);
                 message_queue.push(buffer);
             }
@@ -197,12 +225,17 @@ extern bool messageFlag;
                             cout << "\033[31m[ERROR] " << p.getArgs()[1] << "\033[0m" << endl;
                         break;
                     case ContentType::ResponseClientList:
-                        cout << "\033[32m[Server] Active client number: " << p.getArgs()[0] << endl;
-                        for (int i = 1; i < p.getArgs().size(); i++)
+                        if (p.getArgs()[0] == "1")
                         {
-                            cout << p.getArgs()[i] << endl;
+                            cout << "\033[32m[Server] Client list number: " << p.getArgs()[1] << endl;
+                            for (int i = 2; i < p.getArgs().size(); i++)
+                            {
+                                cout << p.getArgs()[i] << endl;
+                            }
+                            cout << "\033[0m" << endl;
                         }
-                        cout << "\033[0m" << endl;
+                        else
+                            cout << "\033[31m[ERROR] " << p.getArgs()[1] << "\033[0m" << endl;                        
                         break;
                     case ContentType::ResponseSendMessage:
                         if (p.getArgs()[0] == "1")
@@ -227,7 +260,7 @@ extern bool messageFlag;
                         break;
                 }                            
             }            
-            // 通知消息处理线程处理完消息
+            // 通知消息处理线程处理完消息            
             messageFlag = true;          
             cv.notify_one();
         }

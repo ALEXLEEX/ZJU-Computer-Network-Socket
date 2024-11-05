@@ -20,6 +20,7 @@ extern mutex mtx;
 
 // for UDP
 struct sockaddr_in addr;
+extern bool messageFlag;
 
 void connectToServer(int protocol)
 {
@@ -53,10 +54,12 @@ void connectToServer(int protocol)
     serverConnections[serverID].recvThread = startSocketThread(serverID);
 
     cout << "Connected to server successfully. Server ID: " << serverID << endl;
+
+    messageFlag = true;
 }
 
 void connectToServer_UDP(int protocol)
-{
+{    
     int sockfd = init(protocol);
 
     setOptions(sockfd);
@@ -79,20 +82,28 @@ void connectToServer_UDP(int protocol)
         serverID = nextID++;
     }
 
-    serverConnection conn;
-    conn.sockfd = sockfd;
-    conn.connected = false;
-    serverConnections[serverID] = move(conn);
-
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = inet_addr(serverIp.c_str());
     addr.sin_port = htons(serverPort);
 
+    serverConnection conn;
+    conn.sockfd = sockfd;
+    conn.connected = false;
+    serverConnections[serverID] = move(conn);
+    serverConnections[serverID].addr = addr;
+    
     // 创建子进程
     serverConnections[serverID].recvThread = startSocketThread_UDP(serverID);
     
     cout << "Connecting to server..." << endl;
+
+    // 发送连接请求
+    packetID = (packetID + 1) % 256;
+    Packet p("2682", PacketType::REQUEST, PacketID(packetID), ContentType::RequestMakeConnection);
+    string msg = p.encode();
+    sendto(sockfd, msg.c_str(), msg.length(), 0, (struct sockaddr *)&addr, sizeof(addr));
+
 }
 
 void disconnectFromServer()
@@ -114,8 +125,10 @@ void disconnectFromServer()
     pthread_join(serverConnections[serverID].recvThread, NULL);
 
     serverConnections.erase(serverID);
-    cout << "Connections number: " << serverConnections.size() << endl;
-    cout << "Disconnected from server ID " << serverID << endl;
+    // cout << "Connections number: " << serverConnections.size() << endl;
+    // cout << "Disconnected from server ID " << serverID << endl;
+
+    messageFlag = true;
 }
 
 void disconnectFromServer_UDP()
@@ -131,14 +144,15 @@ void disconnectFromServer_UDP()
 
     if (!serverConnections[serverID].connected)
     {
-        cout << "Server is not connected." << endl;
+        cout << "Server is not connected." << endl; 
         return;
     }
 
     // 发送断开请求
-    string msg = "BYE";
-    
-    sendto(serverConnections[serverID].sockfd, msg.c_str(), msg.length(), 0, (struct sockaddr *)&addr, sizeof(addr));
+    packetID = (packetID + 1) % 256;
+    Packet p("2682", PacketType::REQUEST, PacketID(packetID), ContentType::RequestCloseConnection);
+    string msg = p.encode();
+    sendto(serverConnections[serverID].sockfd, msg.c_str(), msg.length(), 0, (struct sockaddr *)&serverConnections[serverID].addr, sizeof(serverConnections[serverID].addr));
 
 }
 
