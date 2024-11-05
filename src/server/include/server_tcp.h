@@ -13,6 +13,7 @@
 
 #include "server_base.h"
 #include "client_info.h"
+#include "../../packet/include/utils.h"
 #include <string>
 
 /* Main class */
@@ -62,8 +63,14 @@ private:
     /* Run the client thread by this worker. */
     void process(int clientSocket);
 
-    /* Send packet to client. */
-    virtual void send2Client(ClientInfo client, std::string message);
+    /* Send assignment message to client. */
+    void sendAssignment(ClientInfo& client, ContentType type, std::string message);
+
+    /* Broadcast message to all active clients. */
+    virtual void broadcastMessage(ContentType type, std::string message);
+
+    /* Send encoded packet to client. */
+    void send2Client(ClientInfo client, std::string message);
 
     /* Save client connection info. */
     ClientInfo& saveConnectInfo(int clientSocket, std::thread::id thread);

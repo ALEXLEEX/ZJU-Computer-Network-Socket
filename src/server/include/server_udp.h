@@ -11,6 +11,7 @@
 /* Header files */
 #include "server_base.h"
 #include "client_info.h"
+#include "../../packet/include/utils.h"
 #include <string>
 #include <netinet/in.h>
 
@@ -51,14 +52,23 @@ private:
     /* Run the server by this worker. */
     virtual void worker();
 
-    /* Send packet to client. */
-    virtual void send2Client(ClientInfo client, std::string message);
+    /* Send assignment message to client. */
+    void sendAssignment(ClientAddr clientAddr, ContentType type, std::string message);
+
+    /* Broadcast message to all active clients. */
+    virtual void broadcastMessage(ContentType type, std::string message);
+
+    /* Send encoded packet to client. */
+    void send2Client(ClientAddr clientAddr, std::string message);
 
     /* Save client connection info. */
-    void saveConnectInfo(ClientAddr clientAddr, int clientStatus);
+    bool saveConnectInfo(ClientAddr clientAddr, int clientStatus);
+
+    /* Whether the client is connected. */
+    bool isConnected(ClientAddr clientAddr);
 
     /* Handle client request. */
-    void handleRequest(ClientInfo& client, std::string message);
+    void handleRequest(ClientAddr clientAddr, std::string message);
 
 };
 
