@@ -54,6 +54,7 @@ void Server_UDP::worker()
         ssize_t rc = recvfrom(serverSocket, buffer, sizeof(buffer), 0, (struct sockaddr *)&clientAddr, &len);
         if (rc <= 0) break;
         std::string message(buffer, rc);
+        LOG(message);
         handleRequest(clientAddr, message);
     }
 }
@@ -75,7 +76,9 @@ void Server_UDP::broadcastMessage(ContentType type, std::string message)
 
 void Server_UDP::send2Client(ClientAddr clientAddr, std::string message)
 {
+    LOG("HERE");
     sendto(serverSocket, message.c_str(), message.size(), 0, (struct sockaddr *)&clientAddr, sizeof(clientAddr));
+    LOG("HERE");
 }
 
 bool Server_UDP::saveConnectInfo(ClientAddr clientAddr, int clientStatus)
@@ -104,7 +107,7 @@ bool Server_UDP::saveConnectInfo(ClientAddr clientAddr, int clientStatus)
                     client.setID(id);
                     activeClients.insert(id);
                     isSuccess = true;
-                    printMessage(ServerMsgType::INFO, "Client " + std::to_string(id) + " connected from " + inet_ntoa(clientAddr.sin_addr) + ":" + std::to_string(ntohs(clientAddr.sin_port)));
+                    printMessage(ServerMsgType::INFO, "Client from " + std::string(inet_ntoa(clientAddr.sin_addr)) + ":" + std::to_string(ntohs(clientAddr.sin_port)) + " connected.");
                     break;
                 }
                 id++;
@@ -230,8 +233,8 @@ void Server_UDP::handleRequest(ClientAddr clientAddr, std::string message)
                 response.setContent(ContentType::ResponseUnknown);
                 response.addArg("Unknown request type.");
             }
-            send2Client(clientAddr, response.encode());
         }
+        send2Client(clientAddr, response.encode());
     }
     return ;
 }
