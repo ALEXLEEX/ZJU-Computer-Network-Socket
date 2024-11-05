@@ -95,6 +95,9 @@ protected:
     /* Send assignment message to client. */
     void sendAssignment(ClientInfo& client, ContentType type, std::string message);
 
+    /* Broadcast message to all active clients. */
+    void broadcastMessage(ContentType type, std::string message);
+
     /* Send packet to client. */
     virtual void send2Client(ClientInfo client, std::string message) = 0;
 

@@ -141,18 +141,29 @@ void Server_Base::startSocketThread()
 
 void Server_Base::sendAssignment(ClientInfo& client, ContentType type, std::string message)
 {
-    Packet packet(SERVER_INFO, PacketType::ASSIGNMENT, packetID, type);
+    Packet packet(SERVER_INFO, PacketType::ASSIGNMENT, packetID++, type);
     packet.addArg(message);
     send2Client(client, packet.encode());
+}
+
+void Server_Base::broadcastMessage(ContentType type, std::string message)
+{
+    for (ClientID id: activeClients) {
+        ClientInfo& client = clientQueue.at(id);
+        sendAssignment(client, type, message);
+    }
 }
 
 void Server_Base::closeClient(ClientInfo& client)
 {
     if (client.getStatus()) {
+        ClientID id = client.getID();
         send2Client(client, "Disconnected from server (" + serverIp + ":" + std::to_string(serverPort) + ").");
         close(client.getSocket());
         client.setStatus(0); // Shut down the sub thread.
-        activeClients.erase(client.getID());
+        activeClients.erase(id);
+        if (serverStatus == ServerStatus::RUN)
+            broadcastMessage(ContentType::AssignmentClientLogout, "Client " + std::to_string(id) + " logged out.");
         printMessage(ServerMsgType::INFO, "Client " + std::to_string(client.getID()) + " disconnected from server.");
     }
     return ;

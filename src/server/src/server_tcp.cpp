@@ -119,6 +119,7 @@ ClientInfo& Server_TCP::saveConnectInfo(int clientSocket, std::thread::id thread
             thisClient.setAddr(clientAddr);
             thisClient.setThread(thread);
             thisClient.setID(id);
+            broadcastMessage(ContentType::AssignmentClientLogin, "Client " + std::to_string(id) + " logged in.");
             activeClients.insert(id);
             break;
         }
