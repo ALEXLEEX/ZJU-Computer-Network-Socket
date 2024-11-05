@@ -13,11 +13,11 @@ using namespace std;
 void connectToServer(int protocol);
 void connectToServer_UDP(int protocol);
 void disconnectFromServer();
-void getCityName();
-void getCityName_UDP();
-void getWeatherInfo();
-void getClientList();
-void sendMessage();
+void disconnectFromServer_UDP();
+void getCityName(int protocol);
+void getWeatherInfo(int protocol);
+void getClientList(int protocol);
+void sendMessage(int protocol);
 
 void exitFromClient();
 

@@ -62,26 +62,27 @@ int main()
                 break;
             case 2:
                 // 断开连接
-                disconnectFromServer();
+                if (protocol == TCP)
+                    disconnectFromServer();
+                else
+                    disconnectFromServer_UDP();
                 break;
             case 3:
                 // 获取城市名字
-                if (protocol == TCP)
-                    getCityName();
-                else
-                    getCityName_UDP();                
+                getCityName(protocol);
+                              
                 break;
             case 4:
                 // 获取气象信息
-                getWeatherInfo();
+                getWeatherInfo(protocol);
                 break;
             case 5:
                 // 活动连接列表
-                getClientList();
+                getClientList(protocol);
                 break;                
             case 6:
                 // 发消息     
-                sendMessage();
+                sendMessage(protocol);
                 break;                           
             case 7:
                 // 退出

@@ -170,7 +170,7 @@ void exitFromClient()
     cout << "Exit successfully." << endl;
 }
 
-void getCityName()
+void getCityName(int protocol)
 {
     int serverID;
     cout << "Please enter the server ID you want to get city name: ";
@@ -178,11 +178,6 @@ void getCityName()
     if (serverConnections.find(serverID) == serverConnections.end() || !serverConnections[serverID].connected)
     {
         cout << "Server ID not found or server is not connected." << endl;
-        return;
-    }
-
-    if (!serverConnections[serverID].connected) {
-        cout << "Server is not connected." << endl;
         return;
     }
 
@@ -197,58 +192,33 @@ void getCityName()
 
     string msg = p.encode();
 
-    if (send(serverConnections[serverID].sockfd, msg.c_str(), msg.length(), 0))
+    if (protocol == TCP)
     {
-        cout << "Request sent successfully." << endl;
+        if (send(serverConnections[serverID].sockfd, msg.c_str(), msg.length(), 0))
+        {
+            cout << "Request sent successfully." << endl;
+        }
+        else
+        {
+            cout << "Failed to send request." << endl;
+        }
     }
     else
     {
-        cout << "Failed to send request." << endl;
+        if (sendto(serverConnections[serverID].sockfd, msg.c_str(), msg.length(), 0, (struct sockaddr *)&serverConnections[serverID].addr, sizeof(serverConnections[serverID].addr)))
+        {
+            cout << "Request sent successfully." << endl;
+        }
+        else
+        {
+            cout << "Failed to send request." << endl;
+        }
     }
 
     // handle_received_message();
 }
 
-void getCityName_UDP()
-{
-    int serverID;
-    cout << "Please enter the server ID you want to get city name: ";
-    cin >> serverID;
-    if (serverConnections.find(serverID) == serverConnections.end() || !serverConnections[serverID].connected)
-    {
-        cout << "Server ID not found or server is not connected." << endl;
-        return;
-    }
-
-    if (!serverConnections[serverID].connected) {
-        cout << "Server is not connected." << endl;
-        return;
-    }
-
-    string areaCode;
-    cout << "Please enter the area code: ";
-    cin >> areaCode;
-
-    // 组装请求数据包
-    packetID = (packetID + 1) % 256;
-    Packet p("2682", PacketType::REQUEST, PacketID(packetID), ContentType::RequestCityName);
-    p.addArg(areaCode);
-
-    string msg = p.encode();
-
-    if (sendto(serverConnections[serverID].sockfd, msg.c_str(), msg.length(), 0, (struct sockaddr *)&serverConnections[serverID].addr, sizeof(serverConnections[serverID].addr)))
-    {
-        cout << "Request sent successfully." << endl;
-    }
-    else
-    {
-        cout << "Failed to send request." << endl;
-    }
-
-    // handle_received_message();
-}
-
-void getWeatherInfo()
+void getWeatherInfo(int protocol)
 {
     int serverID;
     cout << "Please enter the server ID you want to get weather info: ";
@@ -256,11 +226,6 @@ void getWeatherInfo()
     if (serverConnections.find(serverID) == serverConnections.end() || !serverConnections[serverID].connected)
     {
         cout << "Server ID not found or server is not connected." << endl;
-        return;
-    }
-
-    if (!serverConnections[serverID].connected) {
-        cout << "Server is not connected." << endl;
         return;
     }
 
@@ -284,19 +249,33 @@ void getWeatherInfo()
 
     string msg = p.encode();
 
-    if (send(serverConnections[serverID].sockfd, msg.c_str(), msg.length(), 0))
+    if (protocol == TCP)
     {
-        cout << "Request sent successfully." << endl;
+        if (send(serverConnections[serverID].sockfd, msg.c_str(), msg.length(), 0))
+        {
+            cout << "Request sent successfully." << endl;
+        }
+        else
+        {
+            cout << "Failed to send request." << endl;
+        }
     }
     else
     {
-        cout << "Failed to send request." << endl;
+        if (sendto(serverConnections[serverID].sockfd, msg.c_str(), msg.length(), 0, (struct sockaddr *)&serverConnections[serverID].addr, sizeof(serverConnections[serverID].addr)))
+        {
+            cout << "Request sent successfully." << endl;
+        }
+        else
+        {
+            cout << "Failed to send request." << endl;
+        }
     }
 
     // handle_received_message();
 }
 
-void getClientList()
+void getClientList(int protocol)
 {
     int serverID;
     cout << "Please enter the server ID you want to get client list: ";
@@ -313,19 +292,33 @@ void getClientList()
 
     string msg = p.encode();
 
-    if (send(serverConnections[serverID].sockfd, msg.c_str(), msg.length(), 0))
+    if (protocol == TCP)
     {
-        cout << "Request sent successfully." << endl;
+        if (send(serverConnections[serverID].sockfd, msg.c_str(), msg.length(), 0))
+        {
+            cout << "Request sent successfully." << endl;
+        }
+        else
+        {
+            cout << "Failed to send request." << endl;
+        }
     }
     else
     {
-        cout << "Failed to send request." << endl;
+        if (sendto(serverConnections[serverID].sockfd, msg.c_str(), msg.length(), 0, (struct sockaddr *)&serverConnections[serverID].addr, sizeof(serverConnections[serverID].addr)))
+        {
+            cout << "Request sent successfully." << endl;
+        }
+        else
+        {
+            cout << "Failed to send request." << endl;
+        }
     }
 
     // handle_received_message();
 }
 
-void sendMessage()
+void sendMessage(int protocol)
 {
     int serverID;
     cout << "Please enter the server ID you want to send message: ";
@@ -352,13 +345,27 @@ void sendMessage()
 
     string msg = p.encode();
 
-    if (send(serverConnections[serverID].sockfd, msg.c_str(), msg.length(), 0))
+    if (protocol == TCP)
     {
-        cout << "Request sent successfully." << endl;
+        if (send(serverConnections[serverID].sockfd, msg.c_str(), msg.length(), 0))
+        {
+            cout << "Request sent successfully." << endl;
+        }
+        else
+        {
+            cout << "Failed to send request." << endl;
+        }
     }
     else
     {
-        cout << "Failed to send request." << endl;
+        if (sendto(serverConnections[serverID].sockfd, msg.c_str(), msg.length(), 0, (struct sockaddr *)&serverConnections[serverID].addr, sizeof(serverConnections[serverID].addr)))
+        {
+            cout << "Request sent successfully." << endl;
+        }
+        else
+        {
+            cout << "Failed to send request." << endl;
+        }
     }
 
     // handle_received_message();
