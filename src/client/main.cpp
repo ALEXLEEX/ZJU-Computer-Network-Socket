@@ -9,25 +9,31 @@
 #include "interface.h"
 #include "functions.h"
 #include "socket.h"
+#include <thread>
 
 using namespace std;
 
 // global variables
 int nextID=1;
+bool exitFlag = false;
 map<int, serverConnection> serverConnections;
 
 // 用于线程同步的条件变量和互斥锁
+std::mutex cout_mtx;
 std::mutex mtx;
 std::condition_variable cv;
 
 // 消息队列y用于线程间通信
-std::queue<std::string> message_queue;          
+std::queue<std::string> message_queue;
+bool messageFlag = false;          
 
 /*
  * 客户端主函数
 */
 int main()
 {
+    // 开启消息处理线程
+    thread messageHandler(handle_received_message);
     int protocol = INVALID;
     protocolInterface();
     cin >> protocol;
@@ -37,12 +43,13 @@ int main()
         return 0;
     }
     
-    while (1) 
-    {               
+    while (exitFlag == false) 
+    {                              
         showConnectedServers();
         int choice, status, serverID;
         status = serverConnections.size() > 0 ? CONNECTED : DISCONNECTED;
         mainInterface(status);
+        cout << "[Client] Enter your cmd: ";
         cin >> choice;
         switch (choice)
         {
@@ -75,16 +82,22 @@ int main()
                 break;                           
             case 7:
                 // 退出
-                exit();
+                exitFromClient();
+                exitFlag = true;                
                 return 0;
             default:
                 // invalid choice
                 choice = -1;
                 cout << "Invalid choice." << endl;
-                break;
-        }
-        handle_received_message(choice);
+                return -1;
+        }    
+        // 等待消息处理线程处理完消息        
+        unique_lock<mutex> lock(mtx);
+        cv.wait(lock, [] { return messageFlag; });
+        messageFlag = false;        
     }
+
+    messageHandler.join();
 }
 
 

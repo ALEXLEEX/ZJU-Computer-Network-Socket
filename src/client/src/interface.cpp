@@ -11,6 +11,8 @@
 
 using namespace std;
 
+extern std::mutex cout_mtx;
+
 void protocolInterface()
 {
     cout << "Please select the protocol you want to use" << endl;
@@ -18,36 +20,44 @@ void protocolInterface()
     cout << "2. UDP" << endl;
 }
 
+ /**
+  * 主界面，格式化输出菜单, 使用互斥锁保护输出
+  * @status: 客户端连接状态
+  */
 void mainInterface(int status)
-{
-    // 格式化输出菜单
-    cout << "\n======== MENU ========" << endl;
-    if (status == DISCONNECTED) {
-        cout << "1. Connect to Server" << endl;
-        cout << "2. Exit" << endl;
-    }
-    else {
-        cout << "1. Connect to Server" << endl;
-        cout << "2. Disconnect from Server" << endl;
-        cout << "3. Get City Name" << endl;
-        cout << "4. Get Weather Information" << endl;
-        cout << "5. Get Client List" << endl;
-        cout << "6. Send Message" << endl;
-        cout << "7. Exit" << endl;
-    }
-    cout << "======================" << endl;
+{    
+    lock_guard<mutex> lock(cout_mtx);
+    {
+        cout << "\n=============== MENU ================" << endl;
+        if (status == DISCONNECTED) {
+            cout << "1. Connect to Server" << endl;
+            cout << "2. Exit" << endl;
+        }
+        else {
+            cout << "1. Connect to Server" << endl;
+            cout << "2. Disconnect from Server" << endl;
+            cout << "3. Get City Name" << endl;
+            cout << "4. Get Weather Information" << endl;
+            cout << "5. Get Client List" << endl;
+            cout << "6. Send Message" << endl;
+            cout << "7. Exit" << endl;
+        }
+        cout << "=====================================" << endl;
+    }    
 }
 
 void showConnectedServers()
 {
-    cout << "======================" << endl;
+    cout << "\n============= SERVERS ===============" << endl;
     if (serverConnections.empty()) {
         cout << "No server connected." << endl;
-        return;
+        cout << "=====================================" << endl;
+        return;        
     }
-    cout << "Connected servers: " << endl;
+    cout << "Allocated Server ID: " << endl;
     for (auto it = serverConnections.begin(); it != serverConnections.end(); it++)
     {
-        cout << "Server ID: " << it->first << endl;
+        cout << "Server ID: " << it->first << " status: " << (it->second.connected ? "\033[32mConnected\033[0m" : "\033[31mDisconnected\033[0m") << endl;
     }
+    cout << "=====================================" << endl;
 }

@@ -16,6 +16,8 @@ extern map<int, serverConnection> serverConnections;
 extern mutex mtx;
 extern condition_variable cv;
 extern queue<string> message_queue;
+extern bool exitFlag;
+extern bool messageFlag;
 
 /**
  * 对 Socket API 的第一层封装
@@ -24,7 +26,7 @@ extern queue<string> message_queue;
     void exitWithError(const char *msg)
     {
         perror(msg);
-        exit(EXIT_FAILURE);
+        // exitFlag = true;     
     }     
 
     int init(int type)
@@ -50,7 +52,7 @@ extern queue<string> message_queue;
         setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
     }
 
-    void startConnect(int s, char ip[], int port)
+    int startConnect(int s, char ip[], int port)
     {
         struct sockaddr_in channel;
         memset(&channel, 0, sizeof(channel));
@@ -58,7 +60,11 @@ extern queue<string> message_queue;
         channel.sin_addr.s_addr = inet_addr(ip);
         channel.sin_port = htons(port);
         int rc = connect(s, (struct sockaddr *) &channel, sizeof(channel));
-        if (rc < 0) exitWithError("connect failed");
+        if (rc < 0) {
+            exitWithError("connect failed");
+            return 0;
+        }
+        return 1;
     }
     
     void bindAddress(int s, const char ip[], int port)
@@ -71,7 +77,13 @@ extern queue<string> message_queue;
         int rc = bind(s, (struct sockaddr *) &channel, sizeof(channel));
         if (rc < 0) exitWithError("bind failed");
     }
-
+/**
+ * TCP 通信线程，用于接收服务器消息，将消息放入消息队列
+ * 使用 互斥锁 和 条件变量 实现线程同步
+ * @param s socket file descriptor
+ * @return void
+ * 
+ */
     void worker(int serverID)
     {
         char buffer[1024];
@@ -79,14 +91,12 @@ extern queue<string> message_queue;
         ssize_t rc;
 
         while (conn.connected) {
-                        
+
             memset(buffer, 0, sizeof(buffer));
             rc = recv(conn.sockfd, buffer, sizeof(buffer), 0);
 
             if (rc > 0) {
                 string msg(buffer, rc);
-                cout << "\033[34m[Thread] Received one message from server " << serverID << "\033[0m" << endl;
-
                 {
                     lock_guard<mutex> lock(mtx);
                     message_queue.push(msg);
@@ -99,7 +109,7 @@ extern queue<string> message_queue;
             }
         }
         
-        cout << "Thread for server ID " << serverID << " exited." << endl;
+        cout << "\n\033[34m[Thread] Thread for server ID " << serverID << " exited." << "\033[0m" << endl;
     }
 
     void woker_UDP(int serverID)
@@ -150,59 +160,76 @@ extern queue<string> message_queue;
             }
         }        
     }
+/**
+ * 消息处理线程
+ */
+    void handle_received_message()
+    {        
+        while (!exitFlag) {
+            // 从队列中取出对应的消息
+            unique_lock<mutex> lock(mtx);
+            // 等待消息队列出现消息
+            cv.wait(lock, [] { return !message_queue.empty() || exitFlag; });
 
-    void handle_received_message(int choice)
-    {
-        if (choice == -1) return;
-        // 从队列中取出对应的消息
-        unique_lock<mutex> lock(mtx);
-        // 等待消息队列出现消息
-        cv.wait(lock, [] { return !message_queue.empty(); });
+            while (!message_queue.empty()) {
 
-        string msg = message_queue.front();
-        message_queue.pop();
-        
-        if (choice == 0) {
-            cout << "\033[32m[Server] " << msg << endl;
-            return;
-        }
+                string msg = message_queue.front();
+                message_queue.pop();                
 
-        Packet p("3373");
-        if (!p.decode(msg)) {
-            cout << "Failed to decode message." << endl;
-            return;
-        }
-
-        switch (p.getContent())
-        {
-            case ContentType::ResponseCityName:
-                if(p.getArgs()[0] == "1")
-                    cout << "\033[32m[Server] " << "City name: " << p.getArgs()[1] << "\033[0m" << endl;
-                else
-                    cout << "\033[31m[ERROR] " << p.getArgs()[1] << "\033[0m" << endl;
-                break;
-            case ContentType::ResponseWeatherInfo:            
-                if(p.getArgs()[0] == "1")
-                    cout << "\033[32m[Server] " << "Weather info in " << p.getArgs()[1] << ": " << p.getArgs()[2] << "\033[0m" << endl;
-                else
-                    cout << "\033[31m[ERROR] " << p.getArgs()[1] << endl;
-                break;
-            case ContentType::ResponseClientList:
-                cout << "\033[32m[Server] Active client number: " << p.getArgs()[0] << "\033[0m" << endl;
-                for (int i = 1; i < p.getArgs().size(); i++)
-                {
-                    cout << p.getArgs()[i] << endl;
+                Packet p("3373");
+                if (!p.decode(msg)) {
+                    cout << "\033[31m[ERROR] Failed to decode message.\033[0m" << endl;
+                    continue;                    
                 }
-                break;
-            case ContentType::ResponseSendMessage:
-                if (p.getArgs()[0] == "1")
-                    cout << "\033[32m[Server] Message sent successfully."  << "\033[0m" << endl;
-                else
-                    cout << "\033[31m[ERROR] " << p.getArgs()[1] << "\033[0m" << endl;
-                break;
-            default:
-                cout << "\033[31m[ERROR] Unknown message type." << "\033[0m" << endl;
-                break;
+
+                switch (p.getContent())
+                {
+                    case ContentType::ResponseCityName:
+                        if(p.getArgs()[0] == "1")
+                            cout << "\033[32m[Server] " << "City name: " << p.getArgs()[1] << "\033[0m" << endl;
+                        else
+                            cout << "\033[31m[ERROR] " << p.getArgs()[1] << "\033[0m" << endl;
+                        break;
+                    case ContentType::ResponseWeatherInfo:            
+                        if(p.getArgs()[0] == "1")
+                            cout << "\033[32m[Server] " << "Weather info in " << p.getArgs()[1] << ": " << p.getArgs()[2] << "\033[0m" << endl;
+                        else
+                            cout << "\033[31m[ERROR] " << p.getArgs()[1] << "\033[0m" << endl;
+                        break;
+                    case ContentType::ResponseClientList:
+                        cout << "\033[32m[Server] Active client number: " << p.getArgs()[0] << endl;
+                        for (int i = 1; i < p.getArgs().size(); i++)
+                        {
+                            cout << p.getArgs()[i] << endl;
+                        }
+                        cout << "\033[0m" << endl;
+                        break;
+                    case ContentType::ResponseSendMessage:
+                        if (p.getArgs()[0] == "1")
+                            cout << "\033[32m[Server] Message sent successfully."  << "\033[0m" << endl;
+                        else
+                            cout << "\033[31m[ERROR] " << p.getArgs()[1] << "\033[0m" << endl;
+                        break;
+                    case ContentType::AssignmentSendMessage:
+                        cout << "\033[32m[Server] Message: " << p.getArgs()[0] << "\033[0m" << endl;
+                        break;
+                    case ContentType::AssignmentClientLogin:
+                        cout << "\033[32m[Server] " << p.getArgs()[0]  << "\033[0m" << endl;
+                        break;
+                    case ContentType::AssignmentClientLogout:
+                        cout << "\033[32m[Server] " << p.getArgs()[0]  << "\033[0m" << endl;
+                        break;
+                    case ContentType::AssignmentWeatherWarning:
+                        cout << "\033[32m[Server] Weather warning: " << p.getArgs()[0] << "\033[0m" << endl;
+                        break;
+                    default:
+                        cout << "\033[31m[ERROR] Unknown message type." << "\033[0m" << endl;
+                        break;
+                }                            
+            }            
+            // 通知消息处理线程处理完消息
+            messageFlag = true;          
+            cv.notify_one();
         }
     }
     /**

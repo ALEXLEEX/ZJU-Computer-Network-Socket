@@ -15,7 +15,7 @@
 
     void setOptions(int s);
 
-    void startConnect(int s, char ip[], int port);
+    int startConnect(int s, char ip[], int port);
     
     void worker(int s);
 
@@ -25,7 +25,7 @@
 
     pthread_t startSocketThread_UDP(int s);
 
-    void handle_received_message(int choice);
+    void handle_received_message();
 
     void bindAddress(int s, const char ip[], int port);
 

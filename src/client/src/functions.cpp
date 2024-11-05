@@ -34,7 +34,10 @@ void connectToServer(int protocol)
     cout << "Please enter the server port: ";
     cin >> port;
 
-    startConnect(sockfd, (char *)serverIp.c_str(), port);
+    if (!startConnect(sockfd, (char *)serverIp.c_str(), port)) {
+        cout << "Failed to connect to server." << endl;
+        return;
+    }
 
     int serverID;
     {
@@ -139,7 +142,7 @@ void disconnectFromServer_UDP()
 
 }
 
-void exit()
+void exitFromClient()
 {
     for (auto it = serverConnections.begin(); it != serverConnections.end(); it++)
     {
@@ -283,8 +286,10 @@ void sendMessage()
     string receiverID, message;
     cout << "Please enter the receiver ID: ";
     cin >> receiverID;
+    // 输入一段信息，可以是任意字符串包含空格
     cout << "Please enter the message: ";
-    cin >> message;
+    cin.ignore();
+    getline(cin, message);
 
     // 组装请求数据包
     packetID = (packetID + 1) % 256;

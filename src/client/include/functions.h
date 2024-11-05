@@ -18,6 +18,6 @@ void getWeatherInfo();
 void getClientList();
 void sendMessage();
 
-void exit();
+void exitFromClient();
 
 #endif
