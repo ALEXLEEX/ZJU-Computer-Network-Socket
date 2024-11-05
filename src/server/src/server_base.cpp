@@ -9,10 +9,13 @@
 #include "../include/server_base.h"
 #include "../include/client_info.h"
 #include "../include/utils.h"
+#include "../include/config.h"
 #include "../../packet/include/packet.h"
 #include "../../packet/include/utils.h"
 #include <iostream>
 #include <string>
+#include <cstdlib>
+#include <ctime>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -67,6 +70,12 @@ void Server_Base::quit()
 {
     serverStatus = ServerStatus::EXIT;
     printMessage(ServerMsgType::NOTE, "Exitting the server...");
+}
+
+void Server_Base::weatherWarning()
+{
+    std::srand(std::time(0));
+    broadcastMessage(ContentType::AssignmentWeatherWarning, WeatherWarning.at(std::rand() % WarningRecordNums));
 }
 
 /* Utility functions */

@@ -62,6 +62,8 @@ void Server::cmds()
             server->run();
         } else if (command == "stop") {
             server->stop();
+        } else if (command == "broadcast") {
+            server->weatherWarning();
         } else if (command == "help") {
             help();
         } else if (command == "exit" || command == "quit") {
@@ -90,6 +92,8 @@ void Server::help()
     std::cout << "|   start  |                           |" << std::endl;
     std::cout << "*----------*---------------------------*" << std::endl;
     std::cout << "|   stop   | Stop the server           |" << std::endl;
+    std::cout << "*----------*---------------------------*" << std::endl;
+    std::cout << "| broadcast| Broadcast weather warning |" << std::endl;
     std::cout << "*----------*---------------------------*" << std::endl;
     std::cout << "|   help   | Show this help message    |" << std::endl;
     std::cout << "*----------*---------------------------*" << std::endl;

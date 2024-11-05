@@ -56,6 +56,7 @@ public:
      * @note - `run`/`start`: run the server.
      * @note - `stop`: stop the server running.
      * @note - `quit`/`exit`: quit the server.
+     * @note - `broadcast`: broadcast weather warning message to all clients.
      * @note - `help`: show help information.
      */
     void cmds();

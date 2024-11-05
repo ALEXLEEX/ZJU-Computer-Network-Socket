@@ -104,6 +104,7 @@ bool Server_UDP::saveConnectInfo(ClientAddr clientAddr, int clientStatus)
                     client.setID(id);
                     activeClients.insert(id);
                     isSuccess = true;
+                    printMessage(ServerMsgType::INFO, "Client " + std::to_string(id) + " connected from " + inet_ntoa(clientAddr.sin_addr) + ":" + std::to_string(ntohs(clientAddr.sin_port)));
                     break;
                 }
                 id++;

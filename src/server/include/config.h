@@ -18,6 +18,9 @@ const int CityNums = 24;
 /* Number of records in each city's weather information. */
 const int WeatherRecordNums = 7;
 
+/* Number of weather warning information records. */
+const int WarningRecordNums = 20;
+
 /**
  * @brief City names lists.
  */
@@ -293,6 +296,71 @@ const std::vector<std::map<std::string, std::string>> WeatherInfo = {
         {"2024-11-09", "23 degree, Foggy, 65 humidity, 65 wind speed, West wind direction."},
         {"2024-11-10", "22 degree, Sunny, 66 humidity, 66 wind speed, Northwest wind direction."},
     }
+};
+
+/**
+ * @brief Weather warning information.
+ */
+const std::vector<std::string> WeatherWarning = {
+    // 0
+    "Earthquake Alert: Magnitude 5.6 at 2023-10-01 14:30 UTC. Epicenter located at 34.0522° N, 118.2437° W.",
+
+    // 1
+    "Typhoon Alert: Typhoon category 3 centered at 12.3456° N, 123.4567° E. Expected landfall at 2023-10-11 16:00 UTC near Manila.",
+
+    // 2
+    "Earthquake Warning: Magnitude 6.3 at 2023-10-02 09:15 UTC. Epicenter at 37.7749° N, 122.4194° W.",
+
+    // 3
+    "Typhoon Warning: Typhoon category 2 detected at 23.4567° N, 134.5678° E. Anticipated landfall on 2023-10-12 08:00 UTC near Tokyo.",
+
+    // 4
+    "Seismic Activity: Magnitude 4.8 detected on 2023-10-03 18:45 UTC. Location: 36.7783° N, 119.4179° W.",
+
+    // 5
+    "Typhoon Advisory: Typhoon category 4 located at 15.6789° N, 102.3456° E. Projected landfall at 2023-10-13 20:00 UTC near Ho Chi Minh City.",
+
+    // 6
+    "Earthquake Notification: Magnitude 7.1 at 2023-10-04 00:00 UTC. Epicenter coordinates: 28.6139° N, 77.2090° E.",
+
+    // 7
+    "Severe Typhoon Alert: Category 5 at 25.1234° N, 95.9876° E. Expected to make landfall on 2023-10-14 23:30 UTC near Mumbai.",
+
+    // 8
+    "Earthquake Advisory: Magnitude 5.0 recorded on 2023-10-05 13:22 UTC. Epicenter located at 40.7128° N, 74.0060° W.",
+
+    // 9
+    "Typhoon Warning: Category 1 typhoon at 10.2345° N, 145.6789° E. Forecasted landfall on 2023-10-15 11:00 UTC near Guam.",
+
+    // 10
+    "Seismic Alert: Magnitude 6.5 at 2023-10-06 21:10 UTC. Epicenter: 34.0522° N, 118.2437° W.",
+
+    // 11
+    "Typhoon Alert issued: Category 3 typhoon located at 16.7890° N, 122.3450° E. Anticipated landfall at 2023-10-16 07:15 UTC near Taipei.",
+
+    // 12
+    "Earthquake Report: Magnitude 4.2 at 2023-10-07 07:35 UTC. Coordinates: 51.5074° N, 0.1278° W.",
+
+    // 13
+    "Typhoon Advisory: Category 2 at 22.3456° N, 120.5678° E. Expected to hit land on 2023-10-17 15:45 UTC near Kaohsiung.",
+
+    // 14
+    "Earthquake Warning issued: Magnitude 5.9 at 2023-10-08 12:45 UTC. Epicenter at 33.4484° N, 112.0740° W.",
+
+    // 15
+    "Severe Typhoon Warning: Category 4 centered at 18.4567° N, 94.1234° E. Projected landfall on 2023-10-18 18:30 UTC near Yangon.",
+
+    // 16
+    "Earthquake Alert: Magnitude 6.0 on 2023-10-09 19:00 UTC. Location: 41.9028° N, 12.4964° E.",
+
+    // 17
+    "Typhoon Alert: Typhoon category 1 at 14.5678° N, 121.4567° E. Expected to make landfall at 2023-10-19 13:00 UTC near Cebu.",
+
+    // 18
+    "Seismic Warning: Magnitude 5.4 detected on 2023-10-10 03:15 UTC. Epicenter at 39.7392° N, 104.9903° W.",
+
+    // 19
+    "Typhoon Warning issued: Category 3 typhoon located at 19.1234° N, 82.9876° E. Anticipated landfall on 2023-10-20 10:30 UTC near Chennai.",
 };
 
 #endif /* _SERVER_CONFIG_H */

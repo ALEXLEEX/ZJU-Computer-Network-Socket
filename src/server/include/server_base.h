@@ -61,6 +61,11 @@ public:
      */
     void quit();
 
+    /**
+     * Broadcast weather warning message to all active clients.
+     */
+    void weatherWarning();
+
 protected:
 
     int serverSocket; // Server socket.
