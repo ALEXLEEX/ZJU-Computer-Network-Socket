@@ -54,7 +54,6 @@ void Server_UDP::worker()
         ssize_t rc = recvfrom(serverSocket, buffer, sizeof(buffer), 0, (struct sockaddr *)&clientAddr, &len);
         if (rc <= 0) break;
         std::string message(buffer, rc);
-        LOG(message);
         handleRequest(clientAddr, message);
     }
 }
@@ -76,9 +75,7 @@ void Server_UDP::broadcastMessage(ContentType type, std::string message)
 
 void Server_UDP::send2Client(ClientAddr clientAddr, std::string message)
 {
-    LOG("HERE");
     sendto(serverSocket, message.c_str(), message.size(), 0, (struct sockaddr *)&clientAddr, sizeof(clientAddr));
-    LOG("HERE");
 }
 
 bool Server_UDP::saveConnectInfo(ClientAddr clientAddr, int clientStatus)
@@ -107,6 +104,7 @@ bool Server_UDP::saveConnectInfo(ClientAddr clientAddr, int clientStatus)
                     client.setID(id);
                     activeClients.insert(id);
                     isSuccess = true;
+                    broadcastMessage(ContentType::AssignmentClientLogin, "Client " + std::to_string(id) + " logged in.");
                     printMessage(ServerMsgType::INFO, "Client from " + std::string(inet_ntoa(clientAddr.sin_addr)) + ":" + std::to_string(ntohs(clientAddr.sin_port)) + " connected.");
                     break;
                 }
