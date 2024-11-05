@@ -81,7 +81,7 @@ void Server_TCP::process(int clientSocket)
 {
     // Save client connection information.
     ClientInfo& client = saveConnectInfo(clientSocket, std::this_thread::get_id());
-    send2Client(client, "Connected to server(" + serverIp + ":" + std::to_string(serverPort) + ").");
+    // TODO: Send connection message to this client.
     printMessage(ServerMsgType::INFO, "New client (socketFd = " + std::to_string(clientSocket) + ") from " + client.getIP() + ":" + std::to_string(client.getPort()) + " connected, assigned id = " + std::to_string(client.getID()) + ".");
 
     // Receive and handle client requests.
@@ -95,6 +95,21 @@ void Server_TCP::process(int clientSocket)
 
     // Close connection.
     closeClient(client);
+}
+
+void Server_TCP::sendAssignment(ClientInfo& client, ContentType type, std::string message)
+{
+    Packet packet(SERVER_INFO, PacketType::ASSIGNMENT, packetID++, type);
+    packet.addArg(message);
+    send2Client(client, packet.encode());
+}
+
+void Server_TCP::broadcastMessage(ContentType type, std::string message)
+{
+    for (ClientID id: activeClients) {
+        ClientInfo& client = clientQueue.at(id);
+        sendAssignment(client, type, message);
+    }
 }
 
 void Server_TCP::send2Client(ClientInfo client, std::string message)
@@ -111,7 +126,7 @@ ClientInfo& Server_TCP::saveConnectInfo(int clientSocket, std::thread::id thread
     getpeername(clientSocket, (struct sockaddr *)&clientAddr, &len);
 
     // Enqueue client information.
-    int id = 0;
+    ClientID id = 0;
     for (ClientInfo& thisClient: clientQueue) {
         if (!thisClient.getStatus()) {
             thisClient.setStatus(1);
@@ -175,11 +190,12 @@ void Server_TCP::handleRequest(ClientInfo& client, std::string message)
             }
             case ContentType::RequestClientList: {
                 response.setContent(ContentType::ResponseClientList);
-                response.addArg(std::to_string(activeClients.size())); // Arg 1: Active client number.
+                response.addArg("1"); // Arg 1: success.
+                response.addArg(std::to_string(activeClients.size())); // Arg 2: Active client number.
                 std::vector<ClientID> clientIDs(activeClients.begin(), activeClients.end());
                 std::sort(clientIDs.begin(), clientIDs.end());
                 for (ClientID id: clientIDs) {
-                    response.addArg(std::to_string(id) + "," + clientQueue.at(id).getIP() + ":" + std::to_string(clientQueue.at(id).getPort())); // Arg 2: client info.
+                    response.addArg(std::to_string(id) + "," + clientQueue.at(id).getIP() + ":" + std::to_string(clientQueue.at(id).getPort())); // Arg n: client info.
                 }
                 break;
             }

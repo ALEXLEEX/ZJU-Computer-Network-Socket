@@ -81,6 +81,12 @@ public:
             this->addr.sin_port == other.addr.sin_port;
     }
 
+    /* Operator equal: compare a client with a client address. */
+    inline bool operator==(const ClientAddr& otherAddr) const {
+        return this->addr.sin_addr.s_addr == otherAddr.sin_addr.s_addr &&
+            this->addr.sin_port == otherAddr.sin_port;
+    }
+
     /* Debugger. */
     inline void print() const {
         std::cout << "Client " << id << " (" << getIP() << ":" << getPort() << ") from socket " << socket << " in thread " << thread << " is ";

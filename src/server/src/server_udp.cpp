@@ -10,7 +10,11 @@
 #include "../include/server_udp.h"
 #include "../include/client_info.h"
 #include "../include/utils.h"
+#include "../include/config.h"
+#include "../../packet/include/packet.h"
+#include "../../packet/include/utils.h"
 #include <vector>
+#include <algorithm>
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -49,51 +53,182 @@ void Server_UDP::worker()
     while (serverStatus == ServerStatus::RUN) {
         ssize_t rc = recvfrom(serverSocket, buffer, sizeof(buffer), 0, (struct sockaddr *)&clientAddr, &len);
         if (rc <= 0) break;
-        // TODO: send response to client.
         std::string message(buffer, rc);
-        printMessage(ServerMsgType::MSG, "[Client|" + std::string(inet_ntoa(clientAddr.sin_addr)) + ":" + std::to_string(ntohs(clientAddr.sin_port)) + "] " + message);
-        // TODO: add handle client request with saveConnectInfo.
+        handleRequest(clientAddr, message);
     }
 }
 
-void Server_UDP::send2Client(ClientInfo client, std::string message)
+void Server_UDP::sendAssignment(ClientAddr clientAddr, ContentType type, std::string message)
 {
-    message = "\033[32m[Server] " + message + "\033[0m";
-    sendto(client.getSocket(), message.c_str(), message.size(), 0, (struct sockaddr *)&client.getAddr(), sizeof(client.getAddr()));
+    Packet packet(SERVER_INFO, PacketType::ASSIGNMENT, packetID++, type);
+    packet.addArg(message);
+    send2Client(clientAddr, packet.encode());
 }
 
-void Server_UDP::saveConnectInfo(ClientAddr clientAddr, int clientStatus)
+void Server_UDP::broadcastMessage(ContentType type, std::string message)
 {
-    int id = 0;
-    if (clientStatus) { // New connection.
-        for (ClientInfo& client: clientQueue) {
-            if (!client.getStatus()) {
-                client.setStatus(1);
-                client.setAddr(clientAddr);
-                client.setID(id);
-                activeClients.insert(id);
+    for (ClientID id: activeClients) {
+        ClientInfo& client = clientQueue.at(id);
+        sendAssignment(client.getAddr(), type, message);
+    }
+}
+
+void Server_UDP::send2Client(ClientAddr clientAddr, std::string message)
+{
+    sendto(serverSocket, message.c_str(), message.size(), 0, (struct sockaddr *)&clientAddr, sizeof(clientAddr));
+}
+
+bool Server_UDP::saveConnectInfo(ClientAddr clientAddr, int clientStatus)
+{
+    switch (clientStatus) {
+        case 0: { // Close connection.
+            ActiveClients activeClientsCopy = activeClients;
+            // Close the client's all connections.
+            for (ClientID id: activeClientsCopy) {
+                ClientInfo& client = clientQueue.at(id);
+                if (client == clientAddr) {
+                    closeClient(client);
+                    return true;
+                }
+            }
+            break;
+        }
+        case 1: { // New connection.
+            ClientID id = 0;
+            bool isSuccess = false;
+            // Enqueue.
+            for (ClientInfo& client: clientQueue) {
+                if (!client.getStatus()) {
+                    client.setStatus(1);
+                    client.setAddr(clientAddr);
+                    client.setID(id);
+                    activeClients.insert(id);
+                    isSuccess = true;
+                    break;
+                }
+                id++;
+                // TODO: if (id == queueSize + 1) {...}
+            }
+
+            // Close the client's other connections.
+            for (ClientInfo& other: clientQueue) {
+                if (clientQueue[id] == other) closeClient(other);
+            }
+            return isSuccess;
+        }
+    }
+    return false;
+}
+
+bool Server_UDP::isConnected(ClientAddr clientAddr)
+{
+    for (ClientID id: activeClients)
+        if (clientQueue.at(id) == clientAddr) return true;
+    return false;
+}
+
+void Server_UDP::handleRequest(ClientAddr clientAddr, std::string message)
+{
+    Packet request(CLIENT_INFO);
+    if (request.decode(message)) {
+        std::vector<std::string> args = request.getArgs();
+        Packet response(SERVER_INFO, PacketType::RESPONSE, packetID++);
+        switch (request.getContent()) {
+            case ContentType::RequestCityName: {
+                response.setContent(ContentType::ResponseCityName);
+                if (isConnected(clientAddr)) {
+                    int cityID = std::stoi(args[0]);
+                    if (cityID <= CityNums) {
+                        response.addArg("1"); // Arg 1: success.
+                        response.addArg(CityNames.at(cityID)); // Arg 2: city name.
+                    } else {
+                        response.addArg("0"); // Arg 1: failure.
+                        response.addArg("No matching city for ID " + args[0] + "."); // Arg 2: error message.
+                    }
+                } else {
+                    response.addArg("0"); // Arg 1: failure.
+                    response.addArg("Client not connected."); // Arg 2: error message.
+                }
                 break;
             }
-            id++;
-        }
-    } else id = queueSize; // Close connection. TODO: fix
-
-    // Close the client's other connections.
-    for (ClientInfo& other: clientQueue) {
-        if (clientQueue[id] == other) {
-            other.setStatus(0); // Clear the status.
+            case ContentType::RequestWeatherInfo: {
+                response.setContent(ContentType::ResponseWeatherInfo);
+                if (isConnected(clientAddr)) {
+                    int cityID = std::stoi(args[0]);
+                    if (cityID <= WeatherInfo.size()) {
+                        std::string date = args[1] + "-" + args[2] + "-" + args[3];
+                        if (WeatherInfo.at(cityID).count(date)) {
+                            response.addArg("1"); // Arg 1: success.
+                            response.addArg(CityNames.at(cityID)); // Arg 2: city name.
+                            response.addArg(WeatherInfo.at(cityID).at(date)); // Arg 3: weather information.
+                        } else {
+                            response.addArg("0"); // Arg 1: failure.
+                            response.addArg("No weather information for date " + date + "."); // Arg 2: error message.
+                        }
+                    } else {
+                        response.addArg("0"); // Arg 1: failure.
+                        response.addArg("No matching city for ID " + args[0] + "."); // Arg 2: error message.
+                    }
+                } else {
+                    response.addArg("0"); // Arg 1: failure.
+                    response.addArg("Client not connected."); // Arg 2: error message.
+                }
+                break;
+            }
+            case ContentType::RequestClientList: {
+                response.setContent(ContentType::ResponseClientList);
+                if (isConnected(clientAddr)) {
+                    response.addArg("1"); // Arg 1: success.
+                    response.addArg(std::to_string(activeClients.size())); // Arg 2: Active client number.
+                    std::vector<ClientID> clientIDs(activeClients.begin(), activeClients.end());
+                    std::sort(clientIDs.begin(), clientIDs.end());
+                    for (ClientID id: clientIDs) {
+                        response.addArg(std::to_string(id) + "," + clientQueue.at(id).getIP() + ":" + std::to_string(clientQueue.at(id).getPort())); // Arg n: client info.
+                    }
+                } else {
+                    response.addArg("0"); // Arg 1: failure.
+                    response.addArg("Client not connected."); // Arg 2: error message.
+                }
+                break;
+            }
+            case ContentType::RequestSendMessage: {
+                response.setContent(ContentType::ResponseSendMessage);
+                if (isConnected(clientAddr)) {
+                    ClientID targetID = std::stoi(args[0]);
+                    if (targetID <= queueSize) {
+                        ClientInfo& target = clientQueue.at(targetID);
+                        if (target.getStatus()) {
+                            std::string message = "Message received: " + args[1];
+                            sendAssignment(target.getAddr(), ContentType::AssignmentSendMessage, message);
+                            response.addArg("1"); // Arg 1: success.
+                        } else {
+                            response.addArg("0"); // Arg 1: failure.
+                            response.addArg("Client " + std::to_string(targetID) + " not exists."); // Arg 2: error message.
+                        }
+                    } else {
+                        response.addArg("0"); // Arg 1: failure.
+                        response.addArg("Invalid client ID " + args[0] + "."); // Arg 2: error message.
+                    }
+                } else {
+                    response.addArg("0"); // Arg 1: failure.
+                    response.addArg("Client not connected."); // Arg 2: error message.
+                }
+                break;
+            }
+            case ContentType::RequestMakeConnection: {
+                response.setContent(ContentType::ResponseMakeConnection);
+                response.addArg(saveConnectInfo(clientAddr, 1) ? "1" : "0");
+            }
+            case ContentType::RequestCloseConnection: {
+                response.setContent(ContentType::ResponseCloseConnection);
+                response.addArg(saveConnectInfo(clientAddr, 0) ? "1" : "0");
+            }
+            default: {
+                response.setContent(ContentType::ResponseUnknown);
+                response.addArg("Unknown request type.");
+            }
+            send2Client(clientAddr, response.encode());
         }
     }
-}
-
-void Server_UDP::handleRequest(ClientInfo& client, std::string message)
-{
-    /**
-     * @todo Handle client request.
-     * @brief 1. Send response to client of receiving message.
-     *        2. Decode packet and print to server console.
-     *        3. Parse request.
-     *        4. Handle request and response.
-     *        5. set return code: if the client quits, set return code to -1.
-     */
+    return ;
 }
