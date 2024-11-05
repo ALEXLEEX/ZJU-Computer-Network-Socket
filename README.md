@@ -13,7 +13,42 @@
 │   └── socket编程示例.pdf
 └── src
     ├── client
+    │   ├── CMakeLists.txt
+    │   ├── include
+    │   │   ├── config.h
+    │   │   ├── functions.h
+    │   │   ├── interface.h
+    │   │   └── socket.h
+    │   ├── main.cpp
+    │   └── src
+    │       ├── functions.cpp
+    │       ├── interface.cpp
+    │       └── socket.cpp
+    ├── packet
+    │   ├── README.md
+    │   ├── include
+    │   │   ├── packet.h
+    │   │   └── utils.h
+    │   └── src
+    │       └── packet.cpp
     └── server
+        ├── CMakeLists.txt
+        ├── README.md
+        ├── build.sh
+        ├── include
+        │   ├── client_info.h
+        │   ├── config.h
+        │   ├── server.h
+        │   ├── server_base.h
+        │   ├── server_tcp.h
+        │   ├── server_udp.h
+        │   └── utils.h
+        ├── main.cpp
+        └── src
+            ├── server.cpp
+            ├── server_base.cpp
+            ├── server_tcp.cpp
+            └── server_udp.cpp
 ```
 
 ---
@@ -111,3 +146,15 @@
 - 运行多个服务端实例（IP地址、端口之一要不同），用一个客户端同时连接多个服务端，测试功能是否正确
 - 使用多个客户端同时连接服务端，检查并发性
 - 使用Wireshark抓取每个功能的交互数据包
+
+---
+
+## 设计思路
+
+### 服务端
+
+详见[src/server/README.md](src/server/README.md)
+
+### 数据包
+
+详见[src/packet/README.md](src/packet/README.md)

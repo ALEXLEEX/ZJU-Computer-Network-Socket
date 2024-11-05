@@ -23,6 +23,31 @@ Author: [lqy](https://github.com/lEEExp3rt)
 
 ---
 
+## Structure
+
+```Shell
+.
+├── CMakeLists.txt
+├── README.md
+├── build.sh
+├── include
+│   ├── client_info.h
+│   ├── config.h
+│   ├── server.h
+│   ├── server_base.h
+│   ├── server_tcp.h
+│   ├── server_udp.h
+│   └── utils.h
+├── main.cpp
+└── src
+    ├── server.cpp
+    ├── server_base.cpp
+    ├── server_tcp.cpp
+    └── server_udp.cpp
+```
+
+---
+
 ## PROCESS
 
 1. 初始化

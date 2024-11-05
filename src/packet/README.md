@@ -8,7 +8,7 @@
 - [x] 添加终端学号信息的记录
 - [x] 添加解码端的校验检查功能
 - [x] `encode`后字段分隔符的调整
-- [ ] 完成本文档
+- [x] 完成本文档
 - [ ] 数据字段中的标记字符转义*
 
 ---
@@ -21,13 +21,10 @@
 .
 ├── README.md
 ├── include
-│   ├── packet.h
-│   └── utils.h
-├── src
-│   └── packet.cpp
-└── test
-    ├── packet_test.cpp
-    └── test.sh
+│   ├── packet.h
+│   └── utils.h
+└── src
+    └── packet.cpp
 ```
 
 ---
