@@ -192,6 +192,7 @@ extern bool messageFlag;
             else if (conn.connected) {
                 lock_guard<mutex> lock(mtx);
                 message_queue.push(buffer);
+                cv.notify_all();
             }
         }        
     }

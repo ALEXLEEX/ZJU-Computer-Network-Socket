@@ -98,7 +98,6 @@ int main()
         // 等待消息处理线程处理完消息        
         std::unique_lock<std::mutex> lock(mtx);
         cv.wait(lock, [] { return messageFlag; });
-        messageFlag = false;
         // while (messageFlag == false) {
         //     std::this_thread::sleep_for(std::chrono::milliseconds(100));
         //     // cout << "Waiting for message processing..." << endl;
