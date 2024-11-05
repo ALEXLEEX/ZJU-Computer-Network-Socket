@@ -167,13 +167,14 @@ void Server_TCP::handleRequest(ClientInfo& client, std::string message)
                     response.addArg("0"); // Arg 1: failure.
                     response.addArg("No matching city for ID " + args[0] + "."); // Arg 2: error message.
                 }
+                printMessage(ServerMsgType::INFO, "Client " + std::to_string(client.getID()) + " requested city name for ID " + args[0] + ".");
                 break;
             }
             case ContentType::RequestWeatherInfo: {
                 response.setContent(ContentType::ResponseWeatherInfo);
                 int cityID = std::stoi(args[0]);
+                std::string date = args[1] + "-" + args[2] + "-" + args[3];
                 if (cityID <= WeatherInfo.size()) {
-                    std::string date = args[1] + "-" + args[2] + "-" + args[3];
                     if (WeatherInfo.at(cityID).count(date)) {
                         response.addArg("1"); // Arg 1: success.
                         response.addArg(CityNames.at(cityID)); // Arg 2: city name.
@@ -186,6 +187,7 @@ void Server_TCP::handleRequest(ClientInfo& client, std::string message)
                     response.addArg("0"); // Arg 1: failure.
                     response.addArg("No matching city for ID " + args[0] + "."); // Arg 2: error message.
                 }
+                printMessage(ServerMsgType::INFO, "Client " + std::to_string(client.getID()) + " requested weather information for city ID " + args[0] + " and date " + date + ".");
                 break;
             }
             case ContentType::RequestClientList: {
@@ -197,6 +199,7 @@ void Server_TCP::handleRequest(ClientInfo& client, std::string message)
                 for (ClientID id: clientIDs) {
                     response.addArg(std::to_string(id) + "," + clientQueue.at(id).getIP() + ":" + std::to_string(clientQueue.at(id).getPort())); // Arg n: client info.
                 }
+                printMessage(ServerMsgType::INFO, "Client " + std::to_string(client.getID()) + " requested client list.");
                 break;
             }
             case ContentType::RequestSendMessage: {
@@ -216,11 +219,13 @@ void Server_TCP::handleRequest(ClientInfo& client, std::string message)
                     response.addArg("0"); // Arg 1: failure.
                     response.addArg("Invalid client ID " + args[0] + "."); // Arg 2: error message.
                 }
+                printMessage(ServerMsgType::INFO, "Client " + std::to_string(client.getID()) + " requested to send message to client " + args[0] + ".");
                 break;
             }
             default:
                 response.setContent(ContentType::ResponseUnknown);
                 response.addArg("Unknown request type.");
+                printMessage(ServerMsgType::INFO, "Client " + std::to_string(client.getID()) + " requested unknown request type.");
         }
         send2Client(client, response.encode());
     }

@@ -151,6 +151,7 @@ void Server_UDP::handleRequest(ClientAddr clientAddr, std::string message)
                     response.addArg("0"); // Arg 1: failure.
                     response.addArg("Client not connected."); // Arg 2: error message.
                 }
+                printMessage(ServerMsgType::INFO, "Client from " + std::string(inet_ntoa(clientAddr.sin_addr)) + ":" + std::to_string(ntohs(clientAddr.sin_port)) + " requested city name for ID " + args[0] + ".");
                 break;
             }
             case ContentType::RequestWeatherInfo: {
@@ -175,6 +176,7 @@ void Server_UDP::handleRequest(ClientAddr clientAddr, std::string message)
                     response.addArg("0"); // Arg 1: failure.
                     response.addArg("Client not connected."); // Arg 2: error message.
                 }
+                printMessage(ServerMsgType::INFO, "Client from " + std::string(inet_ntoa(clientAddr.sin_addr)) + ":" + std::to_string(ntohs(clientAddr.sin_port)) + " requested weather information for city ID " + args[0] + " and date " + args[1] + "-" + args[2] + "-" + args[3] + ".");
                 break;
             }
             case ContentType::RequestClientList: {
@@ -191,6 +193,7 @@ void Server_UDP::handleRequest(ClientAddr clientAddr, std::string message)
                     response.addArg("0"); // Arg 1: failure.
                     response.addArg("Client not connected."); // Arg 2: error message.
                 }
+                printMessage(ServerMsgType::INFO, "Client from " + std::string(inet_ntoa(clientAddr.sin_addr)) + ":" + std::to_string(ntohs(clientAddr.sin_port)) + " requested client list.");
                 break;
             }
             case ContentType::RequestSendMessage: {
@@ -215,6 +218,7 @@ void Server_UDP::handleRequest(ClientAddr clientAddr, std::string message)
                     response.addArg("0"); // Arg 1: failure.
                     response.addArg("Client not connected."); // Arg 2: error message.
                 }
+                printMessage(ServerMsgType::INFO, "Client from " + std::string(inet_ntoa(clientAddr.sin_addr)) + ":" + std::to_string(ntohs(clientAddr.sin_port)) + " requested to send message to client " + args[0] + ".");
                 break;
             }
             case ContentType::RequestMakeConnection: {
@@ -230,6 +234,7 @@ void Server_UDP::handleRequest(ClientAddr clientAddr, std::string message)
             default: {
                 response.setContent(ContentType::ResponseUnknown);
                 response.addArg("Unknown request type.");
+                printMessage(ServerMsgType::INFO, "Client from " + std::string(inet_ntoa(clientAddr.sin_addr)) + ":" + std::to_string(ntohs(clientAddr.sin_port)) + " requested unknown request type.");
             }
         }
         send2Client(clientAddr, response.encode());
