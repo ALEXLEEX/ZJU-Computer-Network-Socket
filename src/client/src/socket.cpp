@@ -6,6 +6,8 @@
 #define _SOCKET_H_
 #include "config.h"
 #include "socket.h"
+#include "packet.h"
+#include "utils.h"
 using namespace std;
 
 // 线程共享全局变量
@@ -77,14 +79,13 @@ extern queue<string> message_queue;
         ssize_t rc;
 
         while (conn.connected) {
-
-            cout << "receiver State " <<conn.connected << endl;
+                        
             memset(buffer, 0, sizeof(buffer));
             rc = recv(conn.sockfd, buffer, sizeof(buffer), 0);
 
             if (rc > 0) {
                 string msg(buffer, rc);
-                cout << "Received message from server ID " << serverID << ": " << msg << endl;
+                cout << "\033[34m[Thread] Received one message from server " << serverID << "\033[0m" << endl;
 
                 {
                     lock_guard<mutex> lock(mtx);
@@ -129,7 +130,7 @@ extern queue<string> message_queue;
             //     continue;
             // }
 
-            cout << "Received message from server ID " << serverID << ": " << buffer << endl;
+            cout << "[Thread] Received message from server " << serverID << ": " << '{' << buffer << '}' << endl;
 
             if (strcmp(buffer, "BYE") == 0) {
                 cout << "Server ID " << serverID << " disconnected." << endl;
@@ -152,16 +153,57 @@ extern queue<string> message_queue;
 
     void handle_received_message(int choice)
     {
+        if (choice == -1) return;
         // 从队列中取出对应的消息
         unique_lock<mutex> lock(mtx);
         // 等待消息队列出现消息
         cv.wait(lock, [] { return !message_queue.empty(); });
 
-        cout << "Choice: " << choice << endl;
         string msg = message_queue.front();
         message_queue.pop();
-        cout << "Received message: " << msg << endl;
-    
+        
+        if (choice == 0) {
+            cout << "\033[32m[Server] " << msg << endl;
+            return;
+        }
+
+        Packet p("3373");
+        if (!p.decode(msg)) {
+            cout << "Failed to decode message." << endl;
+            return;
+        }
+
+        switch (p.getContent())
+        {
+            case ContentType::ResponseCityName:
+                if(p.getArgs()[0] == "1")
+                    cout << "\033[32m[Server] " << "City name: " << p.getArgs()[1] << "\033[0m" << endl;
+                else
+                    cout << "\033[31m[ERROR] " << p.getArgs()[1] << "\033[0m" << endl;
+                break;
+            case ContentType::ResponseWeatherInfo:            
+                if(p.getArgs()[0] == "1")
+                    cout << "\033[32m[Server] " << "Weather info in " << p.getArgs()[1] << ": " << p.getArgs()[2] << "\033[0m" << endl;
+                else
+                    cout << "\033[31m[ERROR] " << p.getArgs()[1] << endl;
+                break;
+            case ContentType::ResponseClientList:
+                cout << "\033[32m[Server] Active client number: " << p.getArgs()[0] << "\033[0m" << endl;
+                for (int i = 1; i < p.getArgs().size(); i++)
+                {
+                    cout << p.getArgs()[i] << endl;
+                }
+                break;
+            case ContentType::ResponseSendMessage:
+                if (p.getArgs()[0] == "1")
+                    cout << "\033[32m[Server] Message sent successfully."  << "\033[0m" << endl;
+                else
+                    cout << "\033[31m[ERROR] " << p.getArgs()[1] << "\033[0m" << endl;
+                break;
+            default:
+                cout << "\033[31m[ERROR] Unknown message type." << "\033[0m" << endl;
+                break;
+        }
     }
     /**
      * 创建socket线程

@@ -39,8 +39,8 @@ struct serverConnection
     bool connected = false;
     pthread_t recvThread;
     queue<string> messageQueue;
-    mutex queueMutex;
-    condition_variable cv;
+    // mutex queueMutex;
+    // condition_variable cv;
 
     // 删除复制构造函数和赋值运算符，避免不必要的复制
     serverConnection(const serverConnection&) = delete;

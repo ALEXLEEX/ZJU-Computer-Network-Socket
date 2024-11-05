@@ -31,7 +31,7 @@ void mainInterface(int status)
         cout << "2. Disconnect from Server" << endl;
         cout << "3. Get City Name" << endl;
         cout << "4. Get Weather Information" << endl;
-        cout << "5. Active Connection List" << endl;
+        cout << "5. Get Client List" << endl;
         cout << "6. Send Message" << endl;
         cout << "7. Exit" << endl;
     }

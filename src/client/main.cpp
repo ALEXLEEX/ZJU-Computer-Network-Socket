@@ -48,7 +48,10 @@ int main()
         {
             case 1:
                 // 连接
-                connectToServer(protocol);
+                if (protocol == TCP)
+                    connectToServer(protocol);
+                else
+                    connectToServer_UDP(protocol);            
                 break;
             case 2:
                 // 断开连接
@@ -75,6 +78,8 @@ int main()
                 exit();
                 return 0;
             default:
+                // invalid choice
+                choice = -1;
                 cout << "Invalid choice." << endl;
                 break;
         }

@@ -16,6 +16,8 @@ using namespace std;
  */
 
 int packetID = 0;
+extern mutex mtx;
+
 // for UDP
 struct sockaddr_in addr;
 
@@ -34,7 +36,11 @@ void connectToServer(int protocol)
 
     startConnect(sockfd, (char *)serverIp.c_str(), port);
 
-    int serverID = nextID++;
+    int serverID;
+    {
+        lock_guard<mutex> lock(mtx);
+        serverID = nextID++;
+    }
     serverConnection conn;
     conn.sockfd = sockfd;
     conn.connected = true;
@@ -64,7 +70,12 @@ void connectToServer_UDP(int protocol)
 
     bindAddress(sockfd, "0.0.0.0", localPort);
 
-    int serverID = nextID++;
+    int serverID;
+    {
+        lock_guard<mutex> lock(mtx);
+        serverID = nextID++;
+    }
+
     serverConnection conn;
     conn.sockfd = sockfd;
     conn.connected = false;
@@ -77,9 +88,8 @@ void connectToServer_UDP(int protocol)
 
     // 创建子进程
     serverConnections[serverID].recvThread = startSocketThread_UDP(serverID);
-
-    cout << "Connected to server successfully. Server ID: " << serverID << endl;
     
+    cout << "Connecting to server..." << endl;
 }
 
 void disconnectFromServer()
@@ -105,6 +115,30 @@ void disconnectFromServer()
     cout << "Disconnected from server ID " << serverID << endl;
 }
 
+void disconnectFromServer_UDP()
+{
+    int serverID;
+    cout << "Please enter the server ID you want to disconnect: ";
+    cin >> serverID;
+    if (serverConnections.find(serverID) == serverConnections.end() || !serverConnections[serverID].connected)
+    {
+        cout << "Server ID not found or server is not connected." << endl;
+        return;
+    }
+
+    if (!serverConnections[serverID].connected)
+    {
+        cout << "Server is not connected." << endl;
+        return;
+    }
+
+    // 发送断开请求
+    string msg = "BYE";
+    
+    sendto(serverConnections[serverID].sockfd, msg.c_str(), msg.length(), 0, (struct sockaddr *)&addr, sizeof(addr));
+
+}
+
 void exit()
 {
     for (auto it = serverConnections.begin(); it != serverConnections.end(); it++)
@@ -127,6 +161,11 @@ void getCityName()
     if (serverConnections.find(serverID) == serverConnections.end() || !serverConnections[serverID].connected)
     {
         cout << "Server ID not found or server is not connected." << endl;
+        return;
+    }
+
+    if (!serverConnections[serverID].connected) {
+        cout << "Server is not connected." << endl;
         return;
     }
 
@@ -164,17 +203,28 @@ void getWeatherInfo()
         return;
     }
 
+    if (!serverConnections[serverID].connected) {
+        cout << "Server is not connected." << endl;
+        return;
+    }
+
     string date, areaCode;
     cout << "Please enter the area code: ";
     cin >> areaCode;
     cout << "Please enter the date (YYYY-MM-DD): ";
     cin >> date;
 
+    string year = date.substr(0, 4);
+    string month = date.substr(5, 2);
+    string day = date.substr(8, 2);
+
     // 组装请求数据包
     packetID = (packetID + 1) % 256;
     Packet p("2682", PacketType::REQUEST, PacketID(packetID), ContentType::RequestWeatherInfo);
     p.addArg(areaCode);
-    p.addArg(date);
+    p.addArg(year);
+    p.addArg(month);
+    p.addArg(day);
 
     string msg = p.encode();
 
