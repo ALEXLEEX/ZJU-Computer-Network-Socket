@@ -252,7 +252,7 @@ extern bool messageFlag;
                             cout << "\033[31m[ERROR] " << p.getArgs()[1] << "\033[0m" << endl;
                         break;
                     case ContentType::AssignmentSendMessage:
-                        cout << "\033[32m[Server] Message: " << p.getArgs()[0] << "\033[0m" << endl;
+                        cout << "\n\033[32m[Server] Message: " << p.getArgs()[0] << "\033[0m" << endl;
                         break;
                     case ContentType::AssignmentClientLogin:
                         cout << "\033[32m[Server] " << p.getArgs()[0]  << "\033[0m" << endl;
@@ -261,10 +261,10 @@ extern bool messageFlag;
                         cout << "\033[32m[Server] " << p.getArgs()[0]  << "\033[0m" << endl;
                         break;
                     case ContentType::AssignmentWeatherWarning:
-                        cout << "\033[32m[Server] Weather warning: " << p.getArgs()[0] << "\033[0m" << endl;
+                        cout << "\n\033[32m[Server] Weather warning: " << p.getArgs()[0] << "\033[0m" << endl;
                         break;
                     default:
-                        cout << "\033[31m[ERROR] Unknown message type." << "\033[0m" << endl;
+                        cout << "\n\033[31m[ERROR] Unknown message type." << "\033[0m" << endl;
                         break;
                 }                            
             }            
