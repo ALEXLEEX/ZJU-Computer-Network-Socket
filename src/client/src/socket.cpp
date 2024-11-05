@@ -154,11 +154,12 @@ extern bool messageFlag;
                 continue;
             }
 
-            cout << "[Thread] Received message from server " << serverID << ": " << '{' << buffer << '}' << endl;
+            // cout << "[Thread] Received message from server " << serverID << ": " << '{' << buffer << '}' << endl;
 
             if (p.getContent() == ContentType::ResponseMakeConnection) {
                 if (p.getArgs()[0] == "1") {
                     cout << "Received ACK from server ID " << serverID << endl;
+                    cout << "Connection established." << endl;
                     conn.connected = true;
                     messageFlag = true;
                 }
@@ -166,14 +167,18 @@ extern bool messageFlag;
                     cout << "Failed to connect to server ID " << serverID << endl;
                     conn.connected = false;
                     messageFlag = true;
+                    cv.notify_one();
                 }     
             }
 
             else if (p.getContent() == ContentType::ResponseCloseConnection) {
                 if (p.getArgs()[0] == "1") {
                     cout << "Received close connection ACK from server ID " << serverID << endl;
+                    cout << "Connection closed." << endl;
                     conn.connected = false;
                     messageFlag = true;
+                    cv.notify_one();
+                    break;
                 }
                 else {
                     cout << "Failed to close connection to server ID " << serverID << endl;
