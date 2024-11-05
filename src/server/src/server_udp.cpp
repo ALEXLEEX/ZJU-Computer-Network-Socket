@@ -219,10 +219,12 @@ void Server_UDP::handleRequest(ClientAddr clientAddr, std::string message)
             case ContentType::RequestMakeConnection: {
                 response.setContent(ContentType::ResponseMakeConnection);
                 response.addArg(saveConnectInfo(clientAddr, 1) ? "1" : "0");
+                break;
             }
             case ContentType::RequestCloseConnection: {
                 response.setContent(ContentType::ResponseCloseConnection);
                 response.addArg(saveConnectInfo(clientAddr, 0) ? "1" : "0");
+                break;
             }
             default: {
                 response.setContent(ContentType::ResponseUnknown);
