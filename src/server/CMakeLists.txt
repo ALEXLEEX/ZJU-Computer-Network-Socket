@@ -4,7 +4,7 @@ project(server VERSION 2.0 DESCRIPTION "Server for ZJU-Computer-Network-Socket")
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/../../bin)
 
 # Add dependencies.
 find_package(OpenSSL REQUIRED)

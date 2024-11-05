@@ -15,4 +15,4 @@ add_executable(client ${SOURCES})
 
 target_link_libraries(client OpenSSL::SSL OpenSSL::Crypto)
 
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/../../bin)
