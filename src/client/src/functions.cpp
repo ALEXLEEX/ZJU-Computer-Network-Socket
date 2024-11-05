@@ -209,6 +209,45 @@ void getCityName()
     // handle_received_message();
 }
 
+void getCityName_UDP()
+{
+    int serverID;
+    cout << "Please enter the server ID you want to get city name: ";
+    cin >> serverID;
+    if (serverConnections.find(serverID) == serverConnections.end() || !serverConnections[serverID].connected)
+    {
+        cout << "Server ID not found or server is not connected." << endl;
+        return;
+    }
+
+    if (!serverConnections[serverID].connected) {
+        cout << "Server is not connected." << endl;
+        return;
+    }
+
+    string areaCode;
+    cout << "Please enter the area code: ";
+    cin >> areaCode;
+
+    // 组装请求数据包
+    packetID = (packetID + 1) % 256;
+    Packet p("2682", PacketType::REQUEST, PacketID(packetID), ContentType::RequestCityName);
+    p.addArg(areaCode);
+
+    string msg = p.encode();
+
+    if (sendto(serverConnections[serverID].sockfd, msg.c_str(), msg.length(), 0, (struct sockaddr *)&serverConnections[serverID].addr, sizeof(serverConnections[serverID].addr)))
+    {
+        cout << "Request sent successfully." << endl;
+    }
+    else
+    {
+        cout << "Failed to send request." << endl;
+    }
+
+    // handle_received_message();
+}
+
 void getWeatherInfo()
 {
     int serverID;

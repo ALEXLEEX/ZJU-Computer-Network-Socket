@@ -66,7 +66,10 @@ int main()
                 break;
             case 3:
                 // 获取城市名字
-                getCityName();
+                if (protocol == TCP)
+                    getCityName();
+                else
+                    getCityName_UDP();                
                 break;
             case 4:
                 // 获取气象信息
@@ -92,14 +95,14 @@ int main()
                 return -1;
         }    
         // 等待消息处理线程处理完消息        
-        // std::unique_lock<std::mutex> lock(mtx);
-        // cv.wait(lock, [] { return messageFlag; });
-        // messageFlag = false;
-        while (messageFlag == false) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            // cout << "Waiting for message processing..." << endl;
-            // cout << messageFlag << endl;
-        }
+        std::unique_lock<std::mutex> lock(mtx);
+        cv.wait(lock, [] { return messageFlag; });
+        messageFlag = false;
+        // while (messageFlag == false) {
+        //     std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        //     // cout << "Waiting for message processing..." << endl;
+        //     // cout << messageFlag << endl;
+        // }
         messageFlag = false;
     }
 

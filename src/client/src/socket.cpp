@@ -162,12 +162,13 @@ extern bool messageFlag;
                     cout << "Connection established." << endl;
                     conn.connected = true;
                     messageFlag = true;
+                    cv.notify_all();
                 }
                 else {
                     cout << "Failed to connect to server ID " << serverID << endl;
                     conn.connected = false;
                     messageFlag = true;
-                    cv.notify_one();
+                    cv.notify_all();
                 }     
             }
 
@@ -177,13 +178,14 @@ extern bool messageFlag;
                     cout << "Connection closed." << endl;
                     conn.connected = false;
                     messageFlag = true;
-                    cv.notify_one();
+                    cv.notify_all();
                     break;
                 }
                 else {
                     cout << "Failed to close connection to server ID " << serverID << endl;
                     conn.connected = true;
                     messageFlag = true;
+                    cv.notify_all();
                 }
             }
 
@@ -267,7 +269,7 @@ extern bool messageFlag;
             }            
             // 通知消息处理线程处理完消息            
             messageFlag = true;          
-            cv.notify_one();
+            cv.notify_all();
         }
     }
     /**

@@ -14,6 +14,7 @@ void connectToServer(int protocol);
 void connectToServer_UDP(int protocol);
 void disconnectFromServer();
 void getCityName();
+void getCityName_UDP();
 void getWeatherInfo();
 void getClientList();
 void sendMessage();
