@@ -371,7 +371,7 @@ void sendMessage(int protocol)
     // handle_received_message();
 }
 
-// 发送批量测试数据包
+// 发送批量测试数据包,批量获取城市名称
 void sendBatchTestData(int protocol)
 {
     int serverID;
@@ -387,20 +387,21 @@ void sendBatchTestData(int protocol)
     cout << "Please enter the count of test packet: ";
     cin >> count;
 
+
     for (int i = 0; i < count; i++)
     {
         // 组装请求数据包
         packetID = (packetID + 1) % 256;
-        Packet p("2682", PacketType::REQUEST, PacketID(packetID), ContentType::RequestSendMessage);
-        p.addArg("0");
-        p.addArg("Test message " + to_string(i));
+        Packet p("2682", PacketType::REQUEST, PacketID(packetID), ContentType::RequestCityName);
+        p.addArg(to_string(i));
+
         string msg = p.encode();
 
         if (protocol == TCP)
         {
             if (send(serverConnections[serverID].sockfd, msg.c_str(), msg.length(), 0))
             {
-                cout << "Sent test message " << i << " successfully." << endl;
+                cout << "Request sent successfully." << endl;
             }
             else
             {
