@@ -18,6 +18,7 @@ void getCityName(int protocol);
 void getWeatherInfo(int protocol);
 void getClientList(int protocol);
 void sendMessage(int protocol);
+void sendBatchTestData(int protocol);
 
 void exitFromClient();
 

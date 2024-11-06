@@ -89,6 +89,10 @@ int main()
                 exitFromClient();
                 exitFlag = true;                
                 return 0;
+            case 8:
+                // 批量测试，发送100次请求（序号不同）
+                sendBatchTestData(protocol);
+                break;
             default:
                 // invalid choice
                 choice = -1;

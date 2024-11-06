@@ -370,3 +370,55 @@ void sendMessage(int protocol)
 
     // handle_received_message();
 }
+
+// 发送批量测试数据包
+void sendBatchTestData(int protocol)
+{
+    int serverID;
+    cout << "Please enter the server ID you want to send message: ";
+    cin >> serverID;
+    if (serverConnections.find(serverID) == serverConnections.end() || !serverConnections[serverID].connected)
+    {
+        cout << "Server ID not found or server is not connected." << endl;
+        return;
+    }
+
+    int count;
+    cout << "Please enter the count of test packet: ";
+    cin >> count;
+
+    for (int i = 0; i < count; i++)
+    {
+        // 组装请求数据包
+        packetID = (packetID + 1) % 256;
+        Packet p("2682", PacketType::REQUEST, PacketID(packetID), ContentType::RequestSendMessage);
+        p.addArg("0");
+        p.addArg("Test message " + to_string(i));
+        string msg = p.encode();
+
+        if (protocol == TCP)
+        {
+            if (send(serverConnections[serverID].sockfd, msg.c_str(), msg.length(), 0))
+            {
+                cout << "Sent test message " << i << " successfully." << endl;
+            }
+            else
+            {
+                cout << "Failed to send request." << endl;
+            }
+        }
+        else
+        {
+            if (sendto(serverConnections[serverID].sockfd, msg.c_str(), msg.length(), 0, (struct sockaddr *)&serverConnections[serverID].addr, sizeof(serverConnections[serverID].addr)))
+            {
+                cout << "Request sent successfully." << endl;
+            }
+            else
+            {
+                cout << "Failed to send request." << endl;
+            }
+        }
+    }
+
+    // handle_received_message();
+}

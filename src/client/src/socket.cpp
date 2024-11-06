@@ -247,9 +247,9 @@ extern bool messageFlag;
                         break;
                     case ContentType::ResponseSendMessage:
                         if (p.getArgs()[0] == "1")
-                            cout << "\033[32m[Server] Message sent successfully."  << "\033[0m" << endl;
+                            cout << "\n\033[32m[Server] Message sent successfully."  << "\033[0m" << endl;
                         else
-                            cout << "\033[31m[ERROR] " << p.getArgs()[1] << "\033[0m" << endl;
+                            cout << "\n\033[31m[ERROR] " << p.getArgs()[1] << "\033[0m" << endl;
                         break;
                     case ContentType::AssignmentSendMessage:
                         cout << "\n\033[32m[Server] Message: " << p.getArgs()[0] << "\033[0m" << endl;

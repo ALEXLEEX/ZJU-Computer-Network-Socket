@@ -44,6 +44,7 @@ void mainInterface(int status)
             cout << "5. Get Client List" << endl;
             cout << "6. Send Message" << endl;
             cout << "7. Exit" << endl;
+            cout << "8. Send Batch Test Data" << endl;
         }
         cout << "=====================================" << endl;
     }    
