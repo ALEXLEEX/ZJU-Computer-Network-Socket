@@ -255,10 +255,10 @@ extern bool messageFlag;
                         cout << "\n\033[32m[Server] Message: " << p.getArgs()[0] << "\033[0m" << endl;
                         break;
                     case ContentType::AssignmentClientLogin:
-                        cout << "\033[32m[Server] " << p.getArgs()[0]  << "\033[0m" << endl;
+                        cout << "\n\033[32m[Server] " << p.getArgs()[0]  << "\033[0m" << endl;
                         break;
                     case ContentType::AssignmentClientLogout:
-                        cout << "\033[32m[Server] " << p.getArgs()[0]  << "\033[0m" << endl;
+                        cout << "\n\033[32m[Server] " << p.getArgs()[0]  << "\033[0m" << endl;
                         break;
                     case ContentType::AssignmentWeatherWarning:
                         cout << "\n\033[32m[Server] Weather warning: " << p.getArgs()[0] << "\033[0m" << endl;

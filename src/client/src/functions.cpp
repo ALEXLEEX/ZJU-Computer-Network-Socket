@@ -419,6 +419,9 @@ void sendBatchTestData(int protocol)
                 cout << "Failed to send request." << endl;
             }
         }
+
+        // 暂停 0.1s, 等待服务器处理
+        usleep(100000);
     }
 
     // handle_received_message();

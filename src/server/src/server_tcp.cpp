@@ -160,7 +160,7 @@ void Server_TCP::handleRequest(ClientInfo& client, std::string message)
             case ContentType::RequestCityName: {
                 response.setContent(ContentType::ResponseCityName);
                 int cityID = std::stoi(args[0]);
-                if (cityID <= CityNums) {
+                if (cityID < CityNums) {
                     response.addArg("1"); // Arg 1: success.
                     response.addArg(CityNames.at(cityID)); // Arg 2: city name.
                 } else {
