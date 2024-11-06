@@ -421,7 +421,7 @@ void sendBatchTestData(int protocol)
         }
 
         // 暂停 0.1s, 等待服务器处理
-        usleep(100000);
+        // usleep(100000);
     }
 
     // handle_received_message();
