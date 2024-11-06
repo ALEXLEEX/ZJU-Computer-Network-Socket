@@ -90,7 +90,8 @@ void Server_TCP::process(int clientSocket)
         int rc = recv(clientSocket, buffer, sizeof(buffer), 0);
         if (rc <= 0) break;
         std::string message(buffer, rc);
-        handleRequest(client, message);
+        std::thread handleThread(&Server_TCP::handleRequest, this, std::ref(client), message);
+        handleThread.detach();
     }
 
     // Close connection.
